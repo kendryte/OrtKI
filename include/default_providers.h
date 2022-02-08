@@ -1,4 +1,6 @@
 #pragma once
+#include <memory>
+#include <optional>
 #include "core/common/optional.h"
 #include "core/providers/providers.h"
 #include "core/framework/execution_provider.h"
@@ -14,7 +16,7 @@ std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory_Cuda(c
 std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory_Dnnl(int use_arena);
 std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory_MIGraphX(const OrtMIGraphXProviderOptions* params);
 std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory_Nnapi(
-        uint32_t flags, const optional<std::string>& partitioning_stop_ops_list);
+        uint32_t flags, const std::optional<std::string>& partitioning_stop_ops_list);
 std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory_Nuphar(bool, const char*);
 //std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory_Stvm(const char*);
 std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory_OpenVINO(

@@ -19,8 +19,10 @@ namespace ort_ki {
 
 #define CHECK_PROVIDER_STATUS_OK(function)                                                         \
   do {                                                                                              \
-    Status _tmp_status = function;                                                                  \
-    ASSERT_TRUE(_tmp_status.IsOK()) << "provider: " << provider_type << ", error: " << _tmp_status; \
+    Status _tmp_status = function;                                                                 \
+    if(!_tmp_status.IsOK()){                                                                                               \
+    std::cout << "provider: " << provider_type << ", error: " << _tmp_status;                      \
+    }\
   } while (false)
     
     template<typename T>
@@ -458,12 +460,6 @@ namespace ort_ki {
             run_options, execution_providers, options);
     }
 
-#define CHECK_PROVIDER_STATUS_OK(function)                                                         \
-  do {                                                                                              \
-    Status _tmp_status = function;                                                                  \
-    ASSERT_TRUE(_tmp_status.IsOK()) << "provider: " << provider_type << ", error: " << _tmp_status; \
-  } while (false)
-
     void OpExecutor::Run(
             SessionOptions so,  // Take the SessionOptions by value (i.e. make a copy)
             // because we may need to modify it
@@ -726,8 +722,12 @@ namespace ort_ki {
                     cur_provider = "not set";
                 }
 
-                EXPECT_TRUE(has_run)
-                        << "No registered execution providers were able to run.";
+                if(!has_run)
+                {
+                    std::cout << "No registered execution providers were able to run.";
+                }
+//                EXPECT_TRUE(has_run)
+//                        << "No registered execution providers were able to run.";
             }
         }
         ORT_CATCH(const std::exception &ex) {

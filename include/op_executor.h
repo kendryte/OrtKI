@@ -6,6 +6,9 @@
 #include <core/framework/customregistry.h>
 #include <core/framework/run_options.h>
 #include "allocator_manager.h"
+#include "common.h"
+#include "tensor.h"
+#include "environment.h"
 
 using namespace onnxruntime;
 
@@ -248,6 +251,10 @@ namespace ort_ki {
             }
         }
 
+        ~OpExecutor()
+        {
+            reset_env();
+        }
         // Set whether the NodeArg created by AddInput/AddOutput should include shape information
         // for Tensor types. If not added, shape inferencing should resolve. If added, shape inferencing
         // should validate. Default is to not add.
@@ -277,6 +284,41 @@ namespace ort_ki {
                       const size_t size, bool is_initializer = false,
                       const std::vector<std::string> *dim_params = nullptr) {
             AddData(input_data_, name, dims, p_values, size, is_initializer, false, dim_params);
+        }
+
+        void AddInput(const char *name, OrtKITensor *tensor)
+        {
+#define ADD_INPUT(tensor_type, t) \
+        case onnx::TensorProto_DataType_##tensor_type: \
+            AddInput<t>(name, tensor->shape(), tensor->buffer<t>(), tensor->length()); \
+            return;
+
+#define ADD_UNIMPL_INPUT(tensor_type) \
+        case onnx::TensorProto_DataType_##tensor_type: \
+            throw std::runtime_error("Unimplemented input type in OpExecutor::AddInput"); \
+            return;
+
+            switch(tensor->data_type())
+            {
+                ADD_UNIMPL_INPUT(UNDEFINED);
+                ADD_INPUT(FLOAT, float);
+                ADD_INPUT(UINT8, uint8_t);
+                ADD_INPUT(INT8, int8_t);
+                ADD_INPUT(UINT16, uint16_t);
+                ADD_INPUT(INT16, int16_t);
+                ADD_INPUT(INT32, int32_t);
+                ADD_INPUT(INT64, int64_t);
+                ADD_UNIMPL_INPUT(STRING);
+                ADD_INPUT(BOOL, bool);
+                ADD_UNIMPL_INPUT(FLOAT16);
+                ADD_INPUT(DOUBLE, double);
+                ADD_INPUT(UINT32, uint32_t);
+                ADD_INPUT(UINT64, uint64_t);
+                ADD_UNIMPL_INPUT(COMPLEX64);
+                ADD_UNIMPL_INPUT(COMPLEX128);
+                ADD_UNIMPL_INPUT(BFLOAT16);
+            }
+            throw std::runtime_error("Unsupported type in OpExecutor::AddInput");
         }
 
 #if !defined(DISABLE_SPARSE_TENSORS)
@@ -488,6 +530,41 @@ namespace ort_ki {
                        bool sort_output = false, float rel_error = 0.0f, float abs_error = 0.0f) {
             AddData(output_data_, name, dims, p_values, size, false,
                     sort_output, nullptr /* dim_params */, rel_error, abs_error);
+        }
+
+        void AddOutput(const char *name, OrtKITensor *tensor)
+        {
+#define ADD_OUTPUT(tensor_type, t) \
+        case onnx::TensorProto_DataType_##tensor_type: \
+            AddOutput<t>(name, tensor->shape(), tensor->buffer<t>(), tensor->length()); \
+            return;
+
+#define ADD_UNIMPL_OUTPUT(tensor_type) \
+        case onnx::TensorProto_DataType_##tensor_type: \
+            throw std::runtime_error("Unimplemented output type in OpExecutor::AddInput"); \
+            return;
+
+            switch(tensor->data_type())
+            {
+                ADD_UNIMPL_OUTPUT(UNDEFINED);
+                ADD_OUTPUT(FLOAT, float);
+                ADD_OUTPUT(UINT8, uint8_t);
+                ADD_OUTPUT(INT8, int8_t);
+                ADD_OUTPUT(UINT16, uint16_t);
+                ADD_OUTPUT(INT16, int16_t);
+                ADD_OUTPUT(INT32, int32_t);
+                ADD_OUTPUT(INT64, int64_t);
+                ADD_UNIMPL_OUTPUT(STRING);
+                ADD_OUTPUT(BOOL, bool);
+                ADD_UNIMPL_OUTPUT(FLOAT16);
+                ADD_OUTPUT(DOUBLE, double);
+                ADD_OUTPUT(UINT32, uint32_t);
+                ADD_OUTPUT(UINT64, uint64_t);
+                ADD_UNIMPL_OUTPUT(COMPLEX64);
+                ADD_UNIMPL_OUTPUT(COMPLEX128);
+                ADD_UNIMPL_OUTPUT(BFLOAT16);
+            }
+            throw std::runtime_error("Unsupported type in OpExecutor::AddOutput");
         }
 
 #if !defined(DISABLE_SPARSE_TENSORS)
