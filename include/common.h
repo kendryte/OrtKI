@@ -1,6 +1,6 @@
 #pragma once
 
-namespace ort_ki
+namespace ortki
 {
 #define DEFAULT_OPSET 15
 

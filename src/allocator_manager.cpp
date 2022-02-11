@@ -1,6 +1,6 @@
 #include "allocator_manager.h"
 
-namespace ort_ki {
+namespace ortki {
 // Dummy Arena which just call underline device allocator directly.
     class DummyArena : public IAllocator {
     public:

@@ -3,7 +3,7 @@
 #include <core/framework/ort_value.h>
 //#include "kernels/binary.h"
 
-using namespace ort_ki;
+using namespace ortki;
 OrtKITensor* make_tensor(void *buffer, DataType data_type, const int* shape, int rank)
 {
     std::vector<int64_t> shape_vec(shape, shape + rank);
@@ -28,12 +28,12 @@ void tensor_shape(OrtKITensor *tensor, int *output)
     }
 }
 
-ort_ki::OpExecutor *make_op_executor(const char* name)
+ortki::OpExecutor *make_op_executor(const char* name)
 {
     return new OpExecutor(name);
 }
 
-void op_executor_dispose(ort_ki::OpExecutor* executor)
+void op_executor_dispose(ortki::OpExecutor* executor)
 {
     delete executor;
 }

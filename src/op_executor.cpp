@@ -6,7 +6,7 @@
 #include "onnx/shape_inference/implementation.h"
 #include <algorithm>
 
-namespace ort_ki {
+namespace ortki {
 #define EXPECT_TRUE(a) \
     std::cout
 #define ASSERT_TRUE(a) \

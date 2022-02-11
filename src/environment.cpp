@@ -18,7 +18,7 @@ std::unique_ptr<Ort::Env> make_ort_env()
 
 std::unique_ptr<Ort::Env> ort_env = make_ort_env();
 
-namespace ort_ki
+namespace ortki
 {
     static std::unique_ptr<::onnxruntime::logging::LoggingManager> s_default_logging_manager;
 

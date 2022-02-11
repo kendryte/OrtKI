@@ -2,7 +2,7 @@
 #include "core/common/logging/logging.h"
 #include "core/session/environment.h"
 
-namespace ort_ki {
+namespace ortki {
     class Environment;
 
     const onnxruntime::Environment &GetEnvironment();

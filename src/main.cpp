@@ -4,7 +4,7 @@
 #include "kernels/unary.h"
 #include "util.h"
 
-using namespace ort_ki;
+using namespace ortki;
 OrtKITensor *make_tensor()
 {
     auto input_buffer = new int[3];
@@ -19,7 +19,7 @@ int main()
 {
     auto tensorA = make_tensor();
     auto tensorB = make_tensor();
-    auto tensorC = ort_ki::ortki_Add_t(tensorA, tensorB);
+    auto tensorC = ortki::ortki_Add_t(tensorA, tensorB);
     std::cout << "value:" << tensorC->buffer<int>()[0] << std::endl;
     std::cout << "value:" << tensorC->buffer<int>()[1] << std::endl;
     std::cout << "value:" << tensorC->buffer<int>()[2] << std::endl;

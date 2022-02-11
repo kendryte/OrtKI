@@ -4,7 +4,7 @@
 #include <core/framework/tensor_shape.h>
 using DataType = ONNX_NAMESPACE::TensorProto_DataType;
 
-namespace ort_ki {
+namespace ortki {
     struct OrtKITensor {
         // auto release data, used for create output without copy
         OrtKITensor(OrtValue handler) : _handler(handler), _tensor(handler.GetMutable<onnxruntime::Tensor>()) {}

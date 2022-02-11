@@ -12,7 +12,7 @@
 
 using namespace onnxruntime;
 
-namespace ort_ki {
+namespace ortki {
     template<typename T>
     struct SeqTensors {
         void AddTensor(const std::vector<int64_t> &shape0, const std::vector<T> &data0) {

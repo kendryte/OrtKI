@@ -3,7 +3,7 @@
 #include "tensor.h"
 #include "common.h"
 
-namespace ort_ki
+namespace ortki
 {
     #define DEFINE_NODE(node) node,
     enum BinaryOp

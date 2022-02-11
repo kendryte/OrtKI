@@ -1,7 +1,7 @@
 #include "kernels/binary.h"
 #include "op_executor.h"
 
-namespace ort_ki {
+namespace ortki {
 #define DEFINE_NODE(op) OrtKITensor *ortki_##op(OrtKITensor * a, OrtKITensor * b) \
     { \
         OpExecutor e(#op); \

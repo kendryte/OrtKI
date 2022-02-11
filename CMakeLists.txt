@@ -9,7 +9,8 @@ set(SRCS src/main.cpp
         src/default_providers.cpp
         src/environment.cpp
         src/c_api.cpp
-        src/binary.cpp)
+        src/kernels/binary.cpp
+        src/kernels/unary.cpp)
 
 add_library(ortki SHARED ${SRCS})
 

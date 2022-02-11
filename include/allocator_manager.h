@@ -2,7 +2,7 @@
 #include "core/framework/allocator.h"
 
 using namespace onnxruntime;
-namespace ort_ki {
+namespace ortki {
     class AllocatorManager {
     public:
         // the allocator manager is a just for onnx runner to allocate space for input/output tensors.

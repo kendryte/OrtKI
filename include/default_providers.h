@@ -6,7 +6,7 @@
 #include "core/framework/execution_provider.h"
 
 using namespace onnxruntime;
-namespace ort_ki
+namespace ortki
 {
 std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory_ACL(int use_arena);
 std::shared_ptr<IExecutionProviderFactory> CreateExecutionProviderFactory_ArmNN(int use_arena);
