@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package>
+    <metadata>
+        <id>OrtKI</id>
+        <version>0.0.1</version>
+        <authors>FusionBolt</authors>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <license type="expression">Apache</license>
+        <description>unofficial onnxruntime kernel interface</description>
+        <tags>onnx onnxruntime</tags>
+        <dependencies>
+            <group targetFramework="net6.0">
+                <dependency id="System.Numerics.Tensors" version="6.0.0-rc.2.21480.5"/>
+            </group>
+        </dependencies>
+    </metadata>
+</package>

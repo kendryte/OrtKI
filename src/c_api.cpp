@@ -28,6 +28,11 @@ void tensor_shape(OrtKITensor *tensor, int *output)
     }
 }
 
+int* tensor_buffer(ortki::OrtKITensor *tensor)
+{
+    return tensor->buffer<int>();
+}
+
 ortki::OpExecutor *make_op_executor(const char* name)
 {
     return new OpExecutor(name);

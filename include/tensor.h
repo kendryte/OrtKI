@@ -1,22 +1,22 @@
 #pragma once
+#include "common.h"
 #include "util.h"
 #include <core/framework/ort_value.h>
 #include <core/framework/tensor_shape.h>
-using DataType = ONNX_NAMESPACE::TensorProto_DataType;
 
 namespace ortki {
     struct OrtKITensor {
         // auto release data, used for create output without copy
         OrtKITensor(OrtValue handler) : _handler(handler), _tensor(handler.GetMutable<onnxruntime::Tensor>()) {}
 
+        // don't auto release
         OrtKITensor(void *buffer, DataType data_type, const std::vector<int64_t>& shape)
         : OrtKITensor(buffer, data_type, onnxruntime::TensorShape(shape)){}
 
         // don't auto release, used for be called with other language
         OrtKITensor(void *buffer, DataType data_type, onnxruntime::TensorShape shape)
         {
-            // todo:this is error, data should manage by this obj
-            _tensor = new onnxruntime::Tensor(onnxruntime::DataTypeImpl::GetType<int>(), shape, buffer, OrtMemoryInfo());
+            _tensor = new onnxruntime::Tensor(GetDataType(data_type), shape, buffer, OrtMemoryInfo());
             _handler.Init(_tensor, onnxruntime::DataTypeImpl::GetType<onnxruntime::Tensor>(), [](auto&&){});
         }
 

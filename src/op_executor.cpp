@@ -568,7 +568,6 @@ namespace ortki {
 
                 for (auto &entry: *execution_providers) {
                     provider_types += entry->Type() + ":";
-                    session_object.RegisterExecutionProvider(std::move(entry));
                     CHECK_STATUS_OK(session_object.RegisterExecutionProvider(std::move(entry)));
                 }
 
