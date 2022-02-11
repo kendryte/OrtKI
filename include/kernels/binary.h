@@ -6,13 +6,17 @@
 namespace ort_ki
 {
     #define DEFINE_NODE(node) node,
-    enum class BinaryOp
+    enum BinaryOp
     {
 #include "binary.def"
     };
 #undef DEFINE_NODE
 
-    ORTKI_API(void) Binary(OrtKITensor* a, OrtKITensor *b, OrtKITensor *c);
+#define DEFINE_NODE(op) ORTKI_API(OrtKITensor*) ortki_##op(OrtKITensor * a, OrtKITensor * b);
+#include "binary.def"
+#undef DEFINE_NODE
 
-    ORTKI_API(void) Add(OrtKITensor* a, OrtKITensor *b, OrtKITensor *c);
+    ORTKI_API(OrtKITensor*) ortki_Binary(BinaryOp op, OrtKITensor* a, OrtKITensor *b);
+
+    ORTKI_API(OrtKITensor*) ortki_Add_t(OrtKITensor * a, OrtKITensor * b);
 }

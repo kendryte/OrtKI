@@ -1,34 +1,44 @@
 #pragma once
+#include "util.h"
+#include <core/framework/ort_value.h>
+#include <core/framework/tensor_shape.h>
 using DataType = ONNX_NAMESPACE::TensorProto_DataType;
 
-struct OrtKITensor
-{
-    OrtKITensor(uint8_t *buffer, DataType data_type, const int *shape, int rank, const int *stride)
-    : _buffer(buffer), _data_type(data_type), _shape(shape, shape + rank), _stride(stride, stride + rank) {}
+namespace ort_ki {
+    struct OrtKITensor {
+        // auto release data, used for create output without copy
+        OrtKITensor(OrtValue handler) : _handler(handler), _tensor(handler.GetMutable<onnxruntime::Tensor>()) {}
 
-    template<typename T>
-    T* buffer() const {
-        return reinterpret_cast<T*>(_buffer);
-    }
+        OrtKITensor(void *buffer, DataType data_type, const std::vector<int64_t>& shape)
+        : OrtKITensor(buffer, data_type, onnxruntime::TensorShape(shape)){}
 
-    DataType data_type() const {
-        return _data_type;
-    }
+        // don't auto release, used for be called with other language
+        OrtKITensor(void *buffer, DataType data_type, onnxruntime::TensorShape shape)
+        {
+            // todo:this is error, data should manage by this obj
+            _tensor = new onnxruntime::Tensor(onnxruntime::DataTypeImpl::GetType<int>(), shape, buffer, OrtMemoryInfo());
+            _handler.Init(_tensor, onnxruntime::DataTypeImpl::GetType<onnxruntime::Tensor>(), [](auto&&){});
+        }
 
-    const std::vector<int64_t> &shape() const {
-        return _shape;
-    }
+        template<typename T>
+        T* buffer() {
+            return _tensor->MutableData<T>();
+        }
 
-    const std::vector<int64_t> &stride() const {
-        return _stride;
-    }
+        DataType data_type() const {
+            return static_cast<DataType>(_tensor->GetElementType());
+        }
 
-    size_t length() const {
-        return std::accumulate(_shape.begin(), _shape.end(), 1, std::multiplies<size_t>());
-    }
+        std::vector<int64_t> shape() const {
+            return GetShapeVector(_tensor->Shape());
+        }
 
-    uint8_t *_buffer;
-    DataType _data_type;
-    std::vector<int64_t> _shape;
-    std::vector<int64_t> _stride;
-};
+        size_t length() const {
+            auto &&shape = _tensor->Shape().GetDims();
+            return std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<size_t>());
+        }
+
+        onnxruntime::Tensor *_tensor;
+        OrtValue _handler;
+    };
+}

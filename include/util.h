@@ -3,7 +3,7 @@
 #include <core/framework/tensor_shape.h>
 
 namespace ort_ki {
-    inline std::vector<int64_t> GetShapeVector(const TensorShape &shape) {
+    inline std::vector<int64_t> GetShapeVector(const onnxruntime::TensorShape &shape) {
         std::vector<int64_t> result;
         const auto dims = shape.GetDims();
         result.resize(dims.size());

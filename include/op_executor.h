@@ -745,14 +745,13 @@ namespace ort_ki {
             kExpectFailure
         };
 
-        void
-        Run(const std::unordered_set<std::string> &excluded_provider_types = {},
+        std::vector<OrtValue> Run(const std::unordered_set<std::string> &excluded_provider_types = {},
             const RunOptions *run_options = nullptr,
             std::vector<std::unique_ptr<IExecutionProvider>> *execution_providers = nullptr,
             ExecutionMode execution_mode = ExecutionMode::ORT_SEQUENTIAL,
             const Graph::ResolveOptions &resolve_options = {});
 
-        void Run(SessionOptions session_options,
+        std::vector<OrtValue> Run(SessionOptions session_options,
                  const std::unordered_set<std::string> &excluded_provider_types = {},
                  const RunOptions *run_options = nullptr,
                  std::vector<std::unique_ptr<IExecutionProvider>> *execution_providers = nullptr,
@@ -1051,6 +1050,86 @@ namespace ort_ki {
         void AddSparseTensorData(std::vector<Data> &data, NodeArg node_arg,
                                  std::unique_ptr<SparseTensor> p_tensor);
 
+        void InitOutput()
+        {
+            auto schema_registry = ONNX_NAMESPACE::OpSchemaRegistry::Instance();
+            // todo:user defined opset
+            auto schema = schema_registry->GetSchema("Add", DEFAULT_OPSET);
+            auto max_output = schema->max_output();
+            for (int i = 0; i < max_output; ++i) {
+                auto &&output_name = schema->outputs()[i].GetName();
+                output_data_.emplace_back(NodeArg(output_name, nullptr), OrtValue());
+            }
+        }
+
+        TensorShape GetShapeFromShapeProto(const onnx::TensorShapeProto* proto)
+        {
+            std::vector<int64_t> shape;
+            for (int i = 0; i < proto->dim_size(); ++i) {
+                shape.push_back(proto->dim(i).dim_value());
+            }
+            return {shape};
+        }
+
+        void AllocOutput(Graph &graph)
+        {
+            for (int i = 0; i < output_data_.size(); ++i) {
+                auto out_info = graph.GetOutputs()[0];
+                auto proto_shape = out_info->Shape();
+                output_data_[i].def_ = NodeArg(out_info->Name(), out_info->TypeAsProto());
+                output_data_[i].def_.SetShape(*proto_shape);
+
+                auto shape = GetShapeFromShapeProto(proto_shape);
+                auto *buffer = new int[shape.Size()];
+                auto *tensor = new onnxruntime::Tensor(onnxruntime::DataTypeImpl::GetType<int>(), shape,
+                                                      reinterpret_cast<void*>(buffer), OrtMemoryInfo());
+                output_data_[i].data_.Init(tensor, onnxruntime::DataTypeImpl::GetType<onnxruntime::Tensor>(), [](auto&&){});
+            }
+        }
+
+        void GraphResolve(Graph& graph, const Graph::ResolveOptions &options, bool cache_enabled)
+        {
+            Status status = Status::OK();
+            if (!cache_enabled) {
+                if (add_shape_to_tensor_data_) {
+                    //if (add_shape_to_tensor_data_ &&
+                    //    expect_result == ExpectResult::kExpectFailure) {
+                    // capture possible exceptions from shape inference for invalid testcase
+                    ORT_TRY {
+                        status = graph.Resolve(options);
+                    }
+                    ORT_CATCH(const std::exception &ex) {
+                        ORT_HANDLE_EXCEPTION([&]() {
+                            status = ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, ex.what());
+                        });
+                    }
+                } else {
+                    status = graph.Resolve(options);
+                }
+
+//                if (!status.IsOK()) {
+//                    if (expect_result == ExpectResult::kExpectFailure) {
+//                        EXPECT_TRUE(!status.IsOK());
+//                        EXPECT_THAT(status.ErrorMessage(),
+//                                    testing::HasSubstr(expected_failure_string));
+//                    } else {
+//                        LOGS_DEFAULT(ERROR) << "Resolve failed with status: "
+//                                            << status.ErrorMessage();
+//                        EXPECT_TRUE(status.IsOK()) << status.ErrorMessage();
+//                    }
+//                }
+
+
+                auto output = graph.GetOutputs()[0];
+                auto ot = output->TypeAsProto();
+                auto os = output->Shape();
+                if (!status.IsOK()) {
+                    std::cout << status.ErrorMessage() << std::endl;
+                    throw std::runtime_error("status after cache_enabled is not ok");
+//                    return;
+                }
+            }
+        }
 #endif
 
     private:

@@ -1,8 +1,9 @@
 #include "op_executor.h"
 #include "environment.h"
 #include "default_providers.h"
-#include "core/graph/model_load_utils.h"
-#include "core/session/inference_session.h"
+#include <core/graph/model_load_utils.h>
+#include <core/session/inference_session.h>
+#include "onnx/shape_inference/implementation.h"
 #include <algorithm>
 
 namespace ort_ki {
@@ -24,7 +25,7 @@ namespace ort_ki {
     std::cout << "provider: " << provider_type << ", error: " << _tmp_status;                      \
     }\
   } while (false)
-    
+
     template<typename T>
     Tensor copy_sort(const Tensor &src, const AllocatorPtr &allocator) {
         Tensor result(src.DataType(), src.Shape(), allocator);
@@ -357,26 +358,26 @@ namespace ort_ki {
                     session_object.Run(run_options ? *run_options : default_run_options,
                                        feeds, output_names, &fetches);
 
-            if (status.IsOK()) {
-                return {};
-//                if (expect_result == ExpectResult::kExpectFailure) {
-//                    return {};
-//                }
-            } else {
-//                if (expect_result == ExpectResult::kExpectFailure) {
-//                    // Disable expected_failure_string checks for MKL-DNN and OpenVINO EP's
-//                    if (provider_type != kDnnlExecutionProvider &&
-//                        provider_type != kOpenVINOExecutionProvider) {
-//                        EXPECT_THAT(status.ErrorMessage(),
-//                                    testing::HasSubstr(expected_failure_string));
-//                    }
-//                } else {
-//                    LOGS_DEFAULT(ERROR) << "Run failed with status: "
-//                                        << status.ErrorMessage();
-//                    EXPECT_TRUE(status.IsOK()) << status.ErrorMessage();
-//                }
-                return {};
-            }
+//            if (status.IsOK()) {
+//                return fetches;
+////                if (expect_result == ExpectResult::kExpectFailure) {
+////                    return {};
+////                }
+//            } else {
+////                if (expect_result == ExpectResult::kExpectFailure) {
+////                    // Disable expected_failure_string checks for MKL-DNN and OpenVINO EP's
+////                    if (provider_type != kDnnlExecutionProvider &&
+////                        provider_type != kOpenVINOExecutionProvider) {
+////                        EXPECT_THAT(status.ErrorMessage(),
+////                                    testing::HasSubstr(expected_failure_string));
+////                    }
+////                } else {
+////                    LOGS_DEFAULT(ERROR) << "Run failed with status: "
+////                                        << status.ErrorMessage();
+////                    EXPECT_TRUE(status.IsOK()) << status.ErrorMessage();
+////                }
+//                return {};
+//            }
         }
 
         // Verify the outputs
@@ -443,7 +444,7 @@ namespace ort_ki {
         return fetches;
     }
 
-    void OpExecutor::Run(
+    std::vector<OrtValue> OpExecutor::Run(
             const std::unordered_set<std::string> &excluded_provider_types,
             const RunOptions *run_options,
             std::vector<std::unique_ptr<IExecutionProvider>> *execution_providers,
@@ -456,11 +457,11 @@ namespace ort_ki {
         so.execution_mode = execution_mode;
         so.use_deterministic_compute = use_determinism_;
         so.graph_optimization_level = TransformerLevel::Default;  // 'Default' == off
-        Run(so, excluded_provider_types,
+        return Run(so, excluded_provider_types,
             run_options, execution_providers, options);
     }
 
-    void OpExecutor::Run(
+    std::vector<OrtValue> OpExecutor::Run(
             SessionOptions so,  // Take the SessionOptions by value (i.e. make a copy)
             // because we may need to modify it
             const std::unordered_set<std::string> &excluded_provider_types,
@@ -494,49 +495,31 @@ namespace ort_ki {
                         << "Opset version of current model is " << opset_version_
                         << ", the latest released onnx opset version is " << it->second << ".";
                     // GTEST_SKIP();
-                    return;
+                    throw std::runtime_error("opset version error");
                 }
             }
 
+
+            InitOutput();
+            auto schema_registry = ONNX_NAMESPACE::OpSchemaRegistry::Instance();
+            auto schema = schema_registry->GetSchema("Add", 15);
+            auto max_input = schema->max_input();
+            auto max_output = schema->max_output();
+
+
+            // AddOutput("C", new OrtKITensor(new int(), onnx::TensorProto_DataType_INT32, std::vector<int64_t>{}));
             fetches_.clear();
             bool cache_enabled = cached_model_ != nullptr;
             auto p_model = !cache_enabled ? BuildGraph({}, allow_released_onnx_opset_only) : cached_model_;
             auto &graph = p_model->MainGraph();
 
-            Status status = Status::OK();
-            if (!cache_enabled) {
-                if (add_shape_to_tensor_data_) {
-                //if (add_shape_to_tensor_data_ &&
-                //    expect_result == ExpectResult::kExpectFailure) {
-                    // capture possible exceptions from shape inference for invalid testcase
-                    ORT_TRY {
-                        status = graph.Resolve(options);
-                    }
-                    ORT_CATCH(const std::exception &ex) {
-                        ORT_HANDLE_EXCEPTION([&]() {
-                            status = ORT_MAKE_STATUS(ONNXRUNTIME, FAIL, ex.what());
-                        });
-                    }
-                } else {
-                    status = graph.Resolve(options);
-                }
+            GraphResolve(graph, options, cache_enabled);
 
-//                if (!status.IsOK()) {
-//                    if (expect_result == ExpectResult::kExpectFailure) {
-//                        EXPECT_TRUE(!status.IsOK());
-//                        EXPECT_THAT(status.ErrorMessage(),
-//                                    testing::HasSubstr(expected_failure_string));
-//                    } else {
-//                        LOGS_DEFAULT(ERROR) << "Resolve failed with status: "
-//                                            << status.ErrorMessage();
-//                        EXPECT_TRUE(status.IsOK()) << status.ErrorMessage();
-//                    }
-//                }
+            AllocOutput(graph);
+            graph.SetGraphProtoSyncNeeded();
+            graph.SetGraphResolveNeeded();
 
-                if (!status.IsOK()) {
-                    return;
-                }
-            }
+            GraphResolve(graph, options, cache_enabled);
 
             // Hookup the inputs and outputs
             std::unordered_map<std::string, OrtValue> feeds;
@@ -729,6 +712,7 @@ namespace ort_ki {
 //                EXPECT_TRUE(has_run)
 //                        << "No registered execution providers were able to run.";
             }
+            // p_model->MainGraph().GetOutputs()
         }
         ORT_CATCH(const std::exception &ex) {
             ORT_HANDLE_EXCEPTION([&]() {
@@ -737,6 +721,7 @@ namespace ort_ki {
             // rethrow as some tests for error handling expect this
             ORT_RETHROW;
         }
+        return fetches_;
     }
 
 //    void OpExecutor::AddReferenceOutputs(const std::string &model_path) {
