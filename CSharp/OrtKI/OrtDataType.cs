@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace OrtKI;
 
 public enum OrtDataType : byte
@@ -94,4 +96,8 @@ public static class TypeUtil
         }
         throw new ArgumentOutOfRangeException("Unsupported OrtDataType: " + t);
     }
+    
+    public static byte[] GetBytes<T>(ReadOnlySpan<T> span)
+        where T : unmanaged
+        => MemoryMarshal.AsBytes(span).ToArray();
 }

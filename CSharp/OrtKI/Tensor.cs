@@ -17,7 +17,7 @@ public class Tensor : IDisposable
     
     public Tensor(ReadOnlySpan<byte> data, OrtDataType dataType, int[] shape)
     {
-        
+        (Handle, Mem) = MakeTensorHandle(data, dataType, shape);
     }
 
     internal Tensor(IntPtr handle, IntPtr mem)
@@ -76,24 +76,24 @@ public class Tensor : IDisposable
         return Mem != IntPtr.Zero ? Mem : tensor_buffer(Handle);
     }
     
-    [DllImport("ortki")]
+    [DllImport("libortki.so")]
     extern static private unsafe IntPtr make_tensor(
         [In] IntPtr buffer, OrtDataType dataType,
         [In] int* shape, int shape_size);
 
-    [DllImport("ortki")]
+    [DllImport("libortki.so")]
     extern static private void tensor_dispose(IntPtr tensor);
 
-    [DllImport("ortki")]
+    [DllImport("libortki.so")]
     extern static private OrtDataType tensor_data_type(IntPtr tensor);
     
-    [DllImport("ortki")]
+    [DllImport("libortki.so")]
     extern static unsafe private IntPtr tensor_shape(IntPtr tensor, int *output);
     
-    [DllImport("ortki")]
+    [DllImport("libortki.so")]
     extern static private int tensor_rank(IntPtr tensor);
     
-    [DllImport("ortki")]
+    [DllImport("libortki.so")]
     extern static private IntPtr tensor_buffer(IntPtr tensor);
     
     public OrtDataType DataType => tensor_data_type(Handle);
@@ -124,7 +124,14 @@ public class Tensor : IDisposable
             shape);
     }
 
-    public static unsafe Tensor MakeTensor(ReadOnlySpan<byte> buffer, OrtDataType dataType, int[] shape)
+    public static Tensor MakeTensor(ReadOnlySpan<byte> buffer, OrtDataType dataType, int[] shape)
+    {
+        var (handle, mem) = MakeTensorHandle(buffer, dataType, shape);
+        return new Tensor(handle, mem);
+    }
+
+    private static unsafe (IntPtr, IntPtr) MakeTensorHandle(ReadOnlySpan<byte> buffer, OrtDataType dataType,
+        int[] shape)
     {
         var bytes = buffer.Length;
         var memPtr = Marshal.AllocHGlobal(bytes);
@@ -133,7 +140,7 @@ public class Tensor : IDisposable
         fixed (int* shape_ptr = shape)
         {
             var handle = make_tensor(memPtr, dataType, shape_ptr, shape.Length);
-            return new Tensor(handle, memPtr);
+            return (handle, memPtr);
         }
     }
 
@@ -156,5 +163,12 @@ public class Tensor : IDisposable
         var tensor = new DenseTensor<T>(Length);
         new Span<T>(GetMemory().ToPointer(), Length).CopyTo(tensor.Buffer.Span);
         return tensor;
+    }
+
+    public unsafe T[] ToArray<T>()
+    {
+        // todo:what this
+        var mem = GetMemory();
+        return new Span<T>(mem.ToPointer(), Length).ToArray();
     }
 }

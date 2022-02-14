@@ -50,10 +50,10 @@ public enum UnaryOp
 
 public static class OrtKI
 {
-    [DllImport("ortki")]
+    [DllImport("libortki.so")]
     extern static private IntPtr ortki_Binary(BinaryOp op, IntPtr a, IntPtr b);
     
-    [DllImport("ortki")]
+    [DllImport("libortki.so")]
     extern static private IntPtr ortki_Unary(UnaryOp op, IntPtr input);
 
     static public Tensor Binary(BinaryOp op, Tensor a, Tensor b)

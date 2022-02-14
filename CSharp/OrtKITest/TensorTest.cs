@@ -1,4 +1,6 @@
+using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.Hosting;
 using OrtKI;
 using Xunit;
@@ -7,10 +9,26 @@ namespace OrtKITest;
 
 public class TensorTest
 {
-
     public TensorTest(IHost host)
     {
         OrtKI.OrtKI.LoadDLL();
+    }
+
+    [Fact]
+    public void TestConstructor()
+    {
+        var expect = new[] {1, 3};
+        var shape = new[] {2};
+        var t1 = Tensor.MakeTensor(new[] {1, 3}, shape);
+        Assert.Equal(expect, t1.ToArray<int>());
+        
+        var bytes = MemoryMarshal.AsBytes(
+            new ReadOnlySpan<int>(new[] {1, 3}));
+        var t2 = new Tensor(bytes, OrtDataType.Int32, shape);
+        Assert.Equal(expect, t2.ToArray<int>());
+        // var t2 Tensor.MakeTensor(new[] {1, 3}, )
+        // var span = new[] {1, 3}.AsMemory();
+        // var t3 = new Tensor(span, OrtDataType.Int32, new []{2})
     }
     
     [Fact]
@@ -28,6 +46,7 @@ public class TensorTest
     {
         var tensor1 = Tensor.MakeTensor(new[] {1, 2, 3}, new[] {3});
         var tensor2 = Tensor.MakeTensor(new[] {2, 2, 3}, new[] {3});
+        OrtKI.OrtKI.Unary(UnaryOp.Abs, tensor1);
         var result = OrtKI.OrtKI.Binary(BinaryOp.Add, tensor1, tensor2);
         Assert.Equal(new[] {3, 4, 6}, result.ToDense<int>().ToArray());
     }

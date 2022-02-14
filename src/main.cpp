@@ -1,5 +1,4 @@
 #include "op_executor.h"
-#include "kernels/cast.h"
 #include "kernels/binary.h"
 #include "kernels/unary.h"
 #include "util.h"
@@ -19,7 +18,7 @@ int main()
 {
     auto tensorA = make_tensor();
     auto tensorB = make_tensor();
-    auto tensorC = ortki::ortki_Add_t(tensorA, tensorB);
+    auto tensorC = ortki::ortki_Binary(ortki::Add, tensorA, tensorB);
     std::cout << "value:" << tensorC->buffer<int>()[0] << std::endl;
     std::cout << "value:" << tensorC->buffer<int>()[1] << std::endl;
     std::cout << "value:" << tensorC->buffer<int>()[2] << std::endl;

@@ -14,7 +14,7 @@ namespace ortki
 
     using DataType = ONNX_NAMESPACE::TensorProto_DataType;
 
-    onnxruntime::MLDataType GetDataType(DataType data_type)
+    inline onnxruntime::MLDataType GetDataType(DataType data_type)
     {
 #define GET_TYPE(tensor_type, T) \
         case onnx::TensorProto_DataType_##tensor_type: \
