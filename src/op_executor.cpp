@@ -476,6 +476,7 @@ namespace ortki {
             run_called_ = true;
 #endif
 
+
             // IsAllowReleasedONNXOpsetsOnlySet() checks for the appropriate env var in the process (i.e.) process-wide
             // `IsAllowReleasedONNXOpsetsOnlySetForThisTest()` is for this specific OpExecutor instance
             // We will only support released opsets iff IsAllowReleasedONNXOpsetsOnlySet() and `IsAllowReleasedONNXOpsetsOnlySetForThisTest()`
@@ -506,20 +507,22 @@ namespace ortki {
             auto max_input = schema->max_input();
             auto max_output = schema->max_output();
 
-
+            std::cout << "add output" << std::endl;
             // AddOutput("C", new OrtKITensor(new int(), onnx::TensorProto_DataType_INT32, std::vector<int64_t>{}));
             fetches_.clear();
             bool cache_enabled = cached_model_ != nullptr;
             auto p_model = !cache_enabled ? BuildGraph({}, allow_released_onnx_opset_only) : cached_model_;
             auto &graph = p_model->MainGraph();
 
+            std::cout << "graph resolve" << std::endl;
             GraphResolve(graph, options, cache_enabled);
 
+            std::cout << "add output" << std::endl;
             AllocOutput(graph);
-            graph.SetGraphProtoSyncNeeded();
-            graph.SetGraphResolveNeeded();
-
-            GraphResolve(graph, options, cache_enabled);
+//            graph.SetGraphProtoSyncNeeded();
+//            graph.SetGraphResolveNeeded();
+//
+//            GraphResolve(graph, options, cache_enabled);
 
             // Hookup the inputs and outputs
             std::unordered_map<std::string, OrtValue> feeds;
@@ -571,6 +574,7 @@ namespace ortki {
                     CHECK_STATUS_OK(session_object.RegisterExecutionProvider(std::move(entry)));
                 }
 
+                std::cout << "Execute" << std::endl;
                 fetches_ = ExecuteModel<InferenceSession>(
                         *p_model, session_object,
                         run_options, feeds, output_names, provider_types, allow_released_onnx_opset_only);
@@ -685,7 +689,7 @@ namespace ortki {
                     fetches_ = ExecuteModel<InferenceSession>(
                             *p_model, session_object,
                             run_options, feeds, output_names, provider_type, allow_released_onnx_opset_only);
-
+                    std::cout << "Execute" << std::endl;
                     // After the model has initialized (happens in ExecuteModel),
                     // we should be able to tell how many constant initializers were pre-packed
                     // and out of these pre-packed ones how many of them used a "cached" version

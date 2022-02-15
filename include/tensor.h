@@ -38,6 +38,7 @@ namespace ortki {
             return std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<size_t>());
         }
 
+    private:
         onnxruntime::Tensor *_tensor;
         OrtValue _handler;
     };

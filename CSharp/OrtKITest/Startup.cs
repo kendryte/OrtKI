@@ -16,7 +16,7 @@ public class Startup
     
     private static void ConfigureContainer(ContainerBuilder builder)
     {
-        builder.RegisterAssemblyModules(typeof(OrtKI.Tensor).Assembly);
+        builder.RegisterAssemblyModules(typeof(OrtKISharp.Tensor).Assembly);
     }
     
 }

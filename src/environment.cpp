@@ -34,4 +34,9 @@ namespace ortki
     {
         ort_env.reset(nullptr);
     }
+
+    void init_env()
+    {
+        ort_env = make_ort_env();
+    }
 }

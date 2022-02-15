@@ -10,7 +10,8 @@ set(SRCS src/main.cpp
         src/environment.cpp
         src/c_api.cpp
         src/kernels/binary.cpp
-        src/kernels/unary.cpp)
+        src/kernels/unary.cpp
+        src/kernels/tensor.cpp)
 
 add_library(ortki SHARED ${SRCS})
 

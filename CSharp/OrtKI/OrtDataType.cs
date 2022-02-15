@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace OrtKI;
+namespace OrtKISharp;
 
 public enum OrtDataType : byte
 {

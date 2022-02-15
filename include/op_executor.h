@@ -249,6 +249,7 @@ namespace ortki {
                                 ONNX_NAMESPACE::ONNX_DOMAIN).second;
                 opset_version_ = latest_onnx_version;
             }
+            init_env();
         }
 
         ~OpExecutor()

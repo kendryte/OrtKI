@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Hosting;
-using OrtKI;
+using OrtKISharp;
 using Xunit;
 
 namespace OrtKITest;
@@ -11,7 +11,7 @@ public class TensorTest
 {
     public TensorTest(IHost host)
     {
-        OrtKI.OrtKI.LoadDLL();
+        // OrtKI.LoadDLL();
     }
 
     [Fact]
@@ -46,8 +46,7 @@ public class TensorTest
     {
         var tensor1 = Tensor.MakeTensor(new[] {1, 2, 3}, new[] {3});
         var tensor2 = Tensor.MakeTensor(new[] {2, 2, 3}, new[] {3});
-        OrtKI.OrtKI.Unary(UnaryOp.Abs, tensor1);
-        var result = OrtKI.OrtKI.Binary(BinaryOp.Add, tensor1, tensor2);
+        var result = OrtKI.Binary(BinaryOp.Add, tensor1, tensor2);
         Assert.Equal(new[] {3, 4, 6}, result.ToDense<int>().ToArray());
     }
 }

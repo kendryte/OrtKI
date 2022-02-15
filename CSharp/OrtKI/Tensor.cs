@@ -3,9 +3,9 @@ using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 using System.Linq;
 
-namespace OrtKI;
+namespace OrtKISharp;
 
-public class Tensor : IDisposable
+public partial class Tensor : IDisposable
 {
     public IntPtr Handle { get; private set; }
 
@@ -73,29 +73,34 @@ public class Tensor : IDisposable
 
     private IntPtr GetMemory()
     {
+        // When mem is not 0, the data is stored in mem
+        // and in the other case, it is stored in handle
         return Mem != IntPtr.Zero ? Mem : tensor_buffer(Handle);
     }
     
     [DllImport("libortki.so")]
-    extern static private unsafe IntPtr make_tensor(
+    internal static extern unsafe IntPtr make_tensor(
         [In] IntPtr buffer, OrtDataType dataType,
         [In] int* shape, int shape_size);
 
     [DllImport("libortki.so")]
-    extern static private void tensor_dispose(IntPtr tensor);
+    internal static extern void tensor_dispose(IntPtr tensor);
 
     [DllImport("libortki.so")]
-    extern static private OrtDataType tensor_data_type(IntPtr tensor);
+    internal static extern OrtDataType tensor_data_type(IntPtr tensor);
     
     [DllImport("libortki.so")]
-    extern static unsafe private IntPtr tensor_shape(IntPtr tensor, int *output);
+    internal static extern unsafe IntPtr tensor_shape(IntPtr tensor, int *output);
     
     [DllImport("libortki.so")]
-    extern static private int tensor_rank(IntPtr tensor);
+    internal static extern int tensor_rank(IntPtr tensor);
     
     [DllImport("libortki.so")]
-    extern static private IntPtr tensor_buffer(IntPtr tensor);
+    internal static extern IntPtr tensor_buffer(IntPtr tensor);
     
+    [DllImport("libortki.so")]
+    internal static extern IntPtr tensor_to_type(IntPtr tensor, OrtDataType dataType);
+
     public OrtDataType DataType => tensor_data_type(Handle);
 
     public int Rank => tensor_rank(Handle);
@@ -165,10 +170,13 @@ public class Tensor : IDisposable
         return tensor;
     }
 
-    public unsafe T[] ToArray<T>()
+    public unsafe T[] ToArray<T>() where T : unmanaged
     {
-        // todo:what this
-        var mem = GetMemory();
-        return new Span<T>(mem.ToPointer(), Length).ToArray();
+        return ToDense<T>().ToArray();
+    }
+
+    public Tensor ToType(OrtDataType dataType)
+    {
+        return new Tensor(tensor_to_type(Handle, dataType));
     }
 }
