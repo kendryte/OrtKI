@@ -38,8 +38,22 @@ namespace ortki {
             return std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<size_t>());
         }
 
-    private:
+    // private:
         onnxruntime::Tensor *_tensor;
         OrtValue _handler;
+    };
+
+    // be used for create tensor array, OrtValue lifetime managed by OrtKITensor
+    struct OrtKITensorSeq {
+    public:
+        OrtKITensorSeq(const std::vector<OrtValue>& values) : _values(values) {}
+
+        OrtKITensor *get_value(int index) {
+            return new OrtKITensor(_values[index]);
+        }
+
+        int size() const { return _values.size(); }
+    private:
+        std::vector<OrtValue> _values;
     };
 }

@@ -38,6 +38,12 @@ public partial class Tensor : IDisposable
         return MakeTensor<T>(buffer.AsSpan(), shape);
     }
     
+    public static Tensor MakeTensor<T>(T[] buffer) 
+        where T : unmanaged
+    {
+        return MakeTensor<T>(buffer.AsSpan(), new[] {buffer.Length});
+    }
+    
     public void Dispose()
     {
         Dispose(true);
@@ -46,7 +52,7 @@ public partial class Tensor : IDisposable
 
     public unsafe byte[] BufferToArray()
     {
-        var byteSize = Length * 4;
+        var byteSize = Length * TypeUtil.GetLength(DataType);
         byte[] array = new byte[byteSize];
         fixed (byte* dest = array)
         {
@@ -178,5 +184,49 @@ public partial class Tensor : IDisposable
     public Tensor ToType(OrtDataType dataType)
     {
         return new Tensor(tensor_to_type(Handle, dataType));
+    }
+}
+
+public class TensorSeq : IDisposable
+{
+    IntPtr Handle;
+    
+    [DllImport("libortki.so")]
+    private static extern void tensor_seq_dispose(IntPtr seq);
+    
+    [DllImport("libortki.so")]
+    private static extern int tensor_seq_size(IntPtr seq);
+    
+    [DllImport("libortki.so")]
+    private static extern IntPtr tensor_seq_get_value(IntPtr seq, int index);
+
+    internal Tensor GetValue(int index)
+    {
+        return new Tensor(tensor_seq_get_value(Handle, index));
+    }
+
+    internal TensorSeq(IntPtr handle)
+    {
+        Handle = handle;
+    }
+    
+    public Tensor[] ToTensorArray()
+    {
+        return Enumerable.Range(0, tensor_seq_size(Handle)).Select(GetValue).ToArray();
+    }
+    
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+    
+    protected virtual void Dispose(bool disposing)
+    {
+        if (Handle != IntPtr.Zero)
+        {
+            tensor_seq_dispose(Handle);
+            Handle = IntPtr.Zero;
+        }
     }
 }

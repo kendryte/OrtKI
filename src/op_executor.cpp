@@ -448,8 +448,7 @@ namespace ortki {
             const std::unordered_set<std::string> &excluded_provider_types,
             const RunOptions *run_options,
             std::vector<std::unique_ptr<IExecutionProvider>> *execution_providers,
-            ExecutionMode execution_mode,
-            const Graph::ResolveOptions &options) {
+            ExecutionMode execution_mode) {
         SessionOptions so;
         so.use_per_session_threads = false;
         so.session_logid = op_;
@@ -457,6 +456,8 @@ namespace ortki {
         so.execution_mode = execution_mode;
         so.use_deterministic_compute = use_determinism_;
         so.graph_optimization_level = TransformerLevel::Default;  // 'Default' == off
+        Graph::ResolveOptions options = {};
+        options.override_types = true;
         return Run(so, excluded_provider_types,
             run_options, execution_providers, options);
     }
@@ -471,7 +472,8 @@ namespace ortki {
             /*out*/ size_t *number_of_pre_packed_weights_counter,
             /*out*/ size_t *number_of_shared_pre_packed_weights_counter) {
         std::string cur_provider = "not set";
-        ORT_TRY {
+        // try
+        {
 #ifndef NDEBUG
             run_called_ = true;
 #endif
@@ -507,18 +509,19 @@ namespace ortki {
             auto max_input = schema->max_input();
             auto max_output = schema->max_output();
 
-            std::cout << "add output" << std::endl;
+//            std::cout << "add output" << std::endl;
             // AddOutput("C", new OrtKITensor(new int(), onnx::TensorProto_DataType_INT32, std::vector<int64_t>{}));
             fetches_.clear();
             bool cache_enabled = cached_model_ != nullptr;
             auto p_model = !cache_enabled ? BuildGraph({}, allow_released_onnx_opset_only) : cached_model_;
             auto &graph = p_model->MainGraph();
 
-            std::cout << "graph resolve" << std::endl;
+//            std::cout << "graph resolve" << std::endl;
             GraphResolve(graph, options, cache_enabled);
 
-            std::cout << "add output" << std::endl;
+//            std::cout << "add output" << std::endl;
             AllocOutput(graph);
+
 //            graph.SetGraphProtoSyncNeeded();
 //            graph.SetGraphResolveNeeded();
 //
@@ -574,7 +577,7 @@ namespace ortki {
                     CHECK_STATUS_OK(session_object.RegisterExecutionProvider(std::move(entry)));
                 }
 
-                std::cout << "Execute" << std::endl;
+//                std::cout << "Execute" << std::endl;
                 fetches_ = ExecuteModel<InferenceSession>(
                         *p_model, session_object,
                         run_options, feeds, output_names, provider_types, allow_released_onnx_opset_only);
@@ -689,7 +692,7 @@ namespace ortki {
                     fetches_ = ExecuteModel<InferenceSession>(
                             *p_model, session_object,
                             run_options, feeds, output_names, provider_type, allow_released_onnx_opset_only);
-                    std::cout << "Execute" << std::endl;
+//                    std::cout << "Execute" << std::endl;
                     // After the model has initialized (happens in ExecuteModel),
                     // we should be able to tell how many constant initializers were pre-packed
                     // and out of these pre-packed ones how many of them used a "cached" version
@@ -717,14 +720,50 @@ namespace ortki {
             }
             // p_model->MainGraph().GetOutputs()
         }
-        ORT_CATCH(const std::exception &ex) {
-            ORT_HANDLE_EXCEPTION([&]() {
-                std::cerr << ex.what() << "\nProvider:" << cur_provider << "\n";
-            });
-            // rethrow as some tests for error handling expect this
-            ORT_RETHROW;
-        }
+//        ORT_CATCH(const std::exception &ex) {
+//            ORT_HANDLE_EXCEPTION([&]() {
+//                std::cerr << ex.what() << "\nProvider:" << cur_provider << "\n";
+//            });
+//            // rethrow as some tests for error handling expect this
+//            ORT_RETHROW;
+//        }
         return fetches_;
+    }
+
+    void OpExecutor::InitOutput()
+    {
+        auto schema_registry = ONNX_NAMESPACE::OpSchemaRegistry::Instance();
+        auto schema = schema_registry->GetSchema(op_, opset_version_);
+        auto out_size = schema->max_output();
+        // used for split
+        if(out_size == INT32_MAX)
+        {
+            if(output_size_ == 0)
+            {
+                throw std::runtime_error("output size should not be zero, in op" + schema->Name());
+            }
+            out_size = output_size_;
+        }
+        for (int i = 0; i < out_size; ++i) {
+            auto &&output_name = schema->outputs()[i].GetName();
+            auto mltype = DataTypeImpl::GetType<float>();
+            output_data_.emplace_back(NodeArg("node" + std::to_string(i), mltype->GetTypeProto()), OrtValue());
+        }
+    }
+
+    void OpExecutor::AllocOutput(Graph &graph) {
+        for (int i = 0; i < output_data_.size(); ++i) {
+            auto out_info = graph.GetOutputs()[0];
+            auto proto_shape = out_info->Shape();
+            output_data_[i].def_ = NodeArg(out_info->Name(), out_info->TypeAsProto());
+            // output_data_[i].def_.SetShape(*proto_shape);
+
+//                auto shape = GetShapeFromShapeProto(proto_shape);
+//                auto *buffer = new int[shape.Size()];
+//                auto *tensor = new onnxruntime::Tensor(GetDataType(out_info->TypeAsProto()), shape,
+//                                                      reinterpret_cast<void*>(buffer), OrtMemoryInfo());
+//                output_data_[i].data_.Init(tensor, onnxruntime::DataTypeImpl::GetType<onnxruntime::Tensor>(), [](auto&&){});
+        }
     }
 
 //    void OpExecutor::AddReferenceOutputs(const std::string &model_path) {

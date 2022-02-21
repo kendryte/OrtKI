@@ -1,12 +1,11 @@
 #include "c_api.h"
 #include <core/session/onnxruntime_cxx_api.h>
 #include <core/framework/ort_value.h>
-#include "kernels/tensor.h"
+#include "operators.h"
 
 using namespace ortki;
 OrtKITensor* make_tensor(void *buffer, DataType data_type, const int* shape, int rank)
 {
-    std::cout << "make tensor" << std::endl;
     std::vector<int64_t> shape_vec(shape, shape + rank);
     return new OrtKITensor(buffer, data_type, shape_vec);
 }
@@ -46,10 +45,26 @@ ortki::OpExecutor *make_op_executor(const char* name)
     return new OpExecutor(name);
 }
 
+int tensor_seq_size(ortki::OrtKITensorSeq *seq)
+{
+    return seq->size();
+}
+
+ortki::OrtKITensor * tensor_seq_get_value(ortki::OrtKITensorSeq *seq, int index)
+{
+    return seq->get_value(index);
+}
+
+void tensor_seq_dispose(ortki::OrtKITensorSeq* seq)
+{
+    delete seq;
+}
+
+
 // onnxruntime::Tensor don't support directly type cast
 ortki::OrtKITensor *tensor_to_type(ortki::OrtKITensor *tensor, ortki::DataType dataType)
 {
-    return ortki::ortki_Cast(tensor, dataType);
+    return ortki_Cast(tensor, dataType);
 }
 
 void op_executor_dispose(ortki::OpExecutor* executor)

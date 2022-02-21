@@ -1,4 +1,5 @@
 #pragma once
+#include <core/framework/data_types.h>
 
 namespace ortki
 {
@@ -27,13 +28,13 @@ namespace ortki
         _case_impl(INT64, int64_t); \
         _case_not_impl(STRING); \
         _case_impl(BOOL, bool); \
-        _case_not_impl(FLOAT16); \
+        _case_impl(FLOAT16, onnxruntime::MLFloat16); \
         _case_impl(DOUBLE, double); \
         _case_impl(UINT32, uint32_t); \
         _case_impl(UINT64, uint64_t); \
         _case_not_impl(COMPLEX64); \
         _case_not_impl(COMPLEX128); \
-        _case_not_impl(BFLOAT16); \
+        _case_impl(BFLOAT16, onnxruntime::BFloat16); \
     }                                                        \
     throw std::runtime_error("Unsupported DataType");
 
