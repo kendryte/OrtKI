@@ -9,12 +9,14 @@ set(SRCS src/main.cpp
         src/default_providers.cpp
         src/environment.cpp
         src/c_api.cpp
-        src/operators.cpp)
+        src/operators.cpp
+        src/operators_patch.cpp)
 
 add_library(ortki SHARED ${SRCS})
 
 add_compile_definitions(ONNX_ML=1)
 add_compile_definitions(ONNX_NAMESPACE=onnx)
+set(protobuf_WITH_ZLIB OFF)
 
 add_subdirectory(onnxruntime/cmake/)
 message(STATUS "msg")
@@ -61,11 +63,20 @@ target_link_libraries(ortki
         dl
         absl_raw_hash_set
         absl_hash_function_defaults
-
+#        libprotobuf
         "-Wl,--no-whole-archive"
         onnx
-        re2
-        libprotoc)
+        re2)
 
 add_executable(run src/main.cpp)
 target_link_libraries(run ortki)
+
+
+#get_target_property(ptb libprotobuf ARCHIVE_OUTPUT_DIRECTORY)
+#get_target_property(ptbl libprotobuf-lite ARCHIVE_OUTPUT_DIRECTORY)
+#get_target_property(lptc libprotoc ARCHIVE_OUTPUT_DIRECTORY)
+#get_target_property(ptc protoc ARCHIVE_OUTPUT_DIRECTORY)
+#message("Code: ${ptb}")
+#message("Code: ${ptbl}")
+#message("Code: ${lptc}")
+#message("Code: ${ptc}")

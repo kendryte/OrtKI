@@ -7,22 +7,37 @@
 namespace ortki {
     struct OrtKITensor {
         // auto release data, used for create output without copy
-        OrtKITensor(OrtValue handler) : _handler(handler), _tensor(handler.GetMutable<onnxruntime::Tensor>()) {}
+        OrtKITensor(OrtValue handler) : _handler(handler), _tensor(handler.GetMutable<onnxruntime::Tensor>()), _owner(true) {}
 
         // don't auto release
         OrtKITensor(void *buffer, DataType data_type, const std::vector<int64_t>& shape)
         : OrtKITensor(buffer, data_type, onnxruntime::TensorShape(shape)){}
 
         // don't auto release, used for be called with other language
-        OrtKITensor(void *buffer, DataType data_type, onnxruntime::TensorShape shape)
+        OrtKITensor(void *buffer, DataType data_type, onnxruntime::TensorShape shape, bool owner = false) : _owner(owner)
         {
             _tensor = new onnxruntime::Tensor(GetDataType(data_type), shape, buffer, OrtMemoryInfo());
-            _handler.Init(_tensor, onnxruntime::DataTypeImpl::GetType<onnxruntime::Tensor>(), [](auto&&){});
+            auto tensor_type = onnxruntime::DataTypeImpl::GetType<onnxruntime::Tensor>();
+            if(owner)
+            {
+                _handler.Init(_tensor, tensor_type, [](auto&& p){ delete p; });
+            }
+            else
+            {
+                _handler.Init(_tensor, tensor_type, [](auto&&){});
+            }
         }
 
         template<typename T>
         T* buffer() {
             return _tensor->MutableData<T>();
+        }
+
+        template<typename T>
+        std::vector<T> to_vector() {
+            auto *data = buffer<T>();
+            std::vector<T> dataVec(data, data + length());
+            return dataVec;
         }
 
         DataType data_type() const {
@@ -35,12 +50,13 @@ namespace ortki {
 
         size_t length() const {
             auto &&shape = _tensor->Shape().GetDims();
-            return std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<size_t>());
+            return ComputeSize(shape);
         }
 
     // private:
         onnxruntime::Tensor *_tensor;
         OrtValue _handler;
+        bool _owner;
     };
 
     // be used for create tensor array, OrtValue lifetime managed by OrtKITensor

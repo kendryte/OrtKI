@@ -7,6 +7,8 @@
 #include "op_executor.h"
 
 ORTKI_API(ortki::OrtKITensor*) make_tensor(void *buffer, ortki::DataType data_type, const int* shape, int shape_size);
+ORTKI_API(ortki::OrtKITensor*) make_tensor_empty(ortki::DataType data_type, const int* shape, int shape_size);
+
 ORTKI_API(void) tensor_dispose(ortki::OrtKITensor*);
 ORTKI_API(ortki::DataType) tensor_data_type(ortki::OrtKITensor *tensor);
 ORTKI_API(int) tensor_rank(ortki::OrtKITensor *tensor);

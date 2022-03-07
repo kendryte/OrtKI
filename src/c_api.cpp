@@ -10,6 +10,17 @@ OrtKITensor* make_tensor(void *buffer, DataType data_type, const int* shape, int
     return new OrtKITensor(buffer, data_type, shape_vec);
 }
 
+OrtKITensor* make_tensor_empty(DataType data_type, const int* shape, int rank)
+{
+    std::vector<int64_t> shape_vec(shape, shape + rank);
+    auto size = ComputeSize(shape_vec);
+    auto buffer_length = size * GetDataType(data_type)->Size();
+    void *buffer = new char[buffer_length];
+    memset(buffer, 0, buffer_length);
+    auto *tensor = new OrtKITensor(buffer, data_type, shape_vec);
+    return tensor;
+}
+
 void tensor_dispose(OrtKITensor* t)
 {
     delete t;

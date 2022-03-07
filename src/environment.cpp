@@ -37,6 +37,10 @@ namespace ortki
 
     void init_env()
     {
-        ort_env = make_ort_env();
+        try{
+            ort_env = make_ort_env();
+        } catch (const std::exception& e) {
+
+        }
     }
 }

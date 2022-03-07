@@ -13,7 +13,7 @@ namespace ortki {
 
     template<typename T, typename OT = T>
     inline std::vector<OT> ToVector(T *v, int size) {
-        std::vector<T> vec;
+        std::vector<T> vec(size);
         for (int i = 0; i < size; ++i) {
             vec[i] = v[i];
         }
@@ -27,6 +27,11 @@ namespace ortki {
             vec[i] = v[i];
         }
         return vec;
+    }
+
+    template<typename Container>
+    inline size_t ComputeSize(const Container& container) {
+        return std::accumulate(container.begin(), container.end(), 1, std::multiplies<size_t>());
     }
 
 }

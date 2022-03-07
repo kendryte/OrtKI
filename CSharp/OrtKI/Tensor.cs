@@ -90,6 +90,17 @@ public partial class Tensor : IDisposable
         [In] int* shape, int shape_size);
 
     [DllImport("libortki.so")]
+    internal static extern unsafe IntPtr make_tensor_empty(OrtDataType dataType, [In] int* shape, int rank);
+
+    public static unsafe Tensor Empty(int[] shape, OrtDataType dataType = OrtDataType.Float)
+    {
+        fixed (int* shape_ptr = shape)
+        {
+            return new Tensor(make_tensor_empty(dataType, shape_ptr, shape.Length));
+        }
+    }
+
+    [DllImport("libortki.so")]
     internal static extern void tensor_dispose(IntPtr tensor);
 
     [DllImport("libortki.so")]
@@ -184,6 +195,11 @@ public partial class Tensor : IDisposable
     public Tensor ToType(OrtDataType dataType)
     {
         return new Tensor(tensor_to_type(Handle, dataType));
+    }
+
+    public Tensor BroadcastTo(int[] shape)
+    {
+        return this + Empty(shape);
     }
 }
 

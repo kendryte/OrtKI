@@ -297,6 +297,28 @@ namespace ortki {
             AddInput(name.c_str(), tensor);
         }
 
+        void AddSeqInput(const char *name, OrtKITensor **tensor, int size)
+        {
+#define ADD_INPUT(tensor_type, t) \
+        case onnx::TensorProto_DataType_##tensor_type: \
+            {SeqTensors<t> tensors;\
+            for(int i = 0; i < size; ++i)              \
+            {                     \
+            tensors.AddTensor(tensor[i]->shape(), tensor[i]->to_vector<t>());\
+            }\
+            AddSeqInput<t>(name, tensors); \
+            return;}
+
+#define ADD_UNIMPL_INPUT(tensor_type) \
+        case onnx::TensorProto_DataType_##tensor_type: \
+            throw std::runtime_error("Unimplemented input type in OpExecutor::AddInput"); \
+            return;
+
+            DATATYPE_TO_T(tensor[0]->data_type(), ADD_INPUT, ADD_UNIMPL_INPUT)
+        }
+#undef ADD_INPUT
+#undef ADD_UNIMPL_INPUT
+
         void AddInput(const char *name, OrtKITensor *tensor)
         {
 #define ADD_INPUT(tensor_type, t) \
@@ -309,29 +331,10 @@ namespace ortki {
             throw std::runtime_error("Unimplemented input type in OpExecutor::AddInput"); \
             return;
 
-            switch(tensor->data_type())
-            {
-                ADD_UNIMPL_INPUT(UNDEFINED);
-                ADD_INPUT(FLOAT, float);
-                ADD_INPUT(UINT8, uint8_t);
-                ADD_INPUT(INT8, int8_t);
-                ADD_INPUT(UINT16, uint16_t);
-                ADD_INPUT(INT16, int16_t);
-                ADD_INPUT(INT32, int32_t);
-                ADD_INPUT(INT64, int64_t);
-                ADD_UNIMPL_INPUT(STRING);
-                ADD_INPUT(BOOL, bool);
-                ADD_UNIMPL_INPUT(FLOAT16);
-                ADD_INPUT(DOUBLE, double);
-                ADD_INPUT(UINT32, uint32_t);
-                ADD_INPUT(UINT64, uint64_t);
-                ADD_UNIMPL_INPUT(COMPLEX64);
-                ADD_UNIMPL_INPUT(COMPLEX128);
-                ADD_UNIMPL_INPUT(BFLOAT16);
-            }
-            throw std::runtime_error("Unsupported type in OpExecutor::AddInput");
+            DATATYPE_TO_T(tensor->data_type(), ADD_INPUT, ADD_UNIMPL_INPUT)
         }
-
+#undef ADD_INPUT
+#undef ADD_UNIMPL_INPUT
 #if !defined(DISABLE_SPARSE_TENSORS)
 
         // Useful to add boolean data
@@ -555,27 +558,7 @@ namespace ortki {
             throw std::runtime_error("Unimplemented output type in OpExecutor::AddInput"); \
             return;
 
-            switch(tensor->data_type())
-            {
-                ADD_UNIMPL_OUTPUT(UNDEFINED);
-                ADD_OUTPUT(FLOAT, float);
-                ADD_OUTPUT(UINT8, uint8_t);
-                ADD_OUTPUT(INT8, int8_t);
-                ADD_OUTPUT(UINT16, uint16_t);
-                ADD_OUTPUT(INT16, int16_t);
-                ADD_OUTPUT(INT32, int32_t);
-                ADD_OUTPUT(INT64, int64_t);
-                ADD_UNIMPL_OUTPUT(STRING);
-                ADD_OUTPUT(BOOL, bool);
-                ADD_UNIMPL_OUTPUT(FLOAT16);
-                ADD_OUTPUT(DOUBLE, double);
-                ADD_OUTPUT(UINT32, uint32_t);
-                ADD_OUTPUT(UINT64, uint64_t);
-                ADD_UNIMPL_OUTPUT(COMPLEX64);
-                ADD_UNIMPL_OUTPUT(COMPLEX128);
-                ADD_UNIMPL_OUTPUT(BFLOAT16);
-            }
-            throw std::runtime_error("Unsupported type in OpExecutor::AddOutput");
+            DATATYPE_TO_T(tensor->data_type(), ADD_OUTPUT, ADD_UNIMPL_OUTPUT)
         }
 
 #if !defined(DISABLE_SPARSE_TENSORS)
@@ -1115,7 +1098,7 @@ namespace ortki {
         }
 #endif
     private:
-        size_t output_size_ = 0;
+        size_t output_size_ = INT32_MAX;
         const char *domain_;
         int opset_version_;
         bool add_shape_to_tensor_data_ = true;

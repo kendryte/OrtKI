@@ -455,7 +455,7 @@ namespace ortki {
         so.session_log_verbosity_level = 1;
         so.execution_mode = execution_mode;
         so.use_deterministic_compute = use_determinism_;
-        so.graph_optimization_level = TransformerLevel::Default;  // 'Default' == off
+        so.graph_optimization_level = TransformerLevel::Level1;  // 'Default' == off
         Graph::ResolveOptions options = {};
         options.override_types = true;
         return Run(so, excluded_provider_types,
@@ -516,10 +516,10 @@ namespace ortki {
             auto p_model = !cache_enabled ? BuildGraph({}, allow_released_onnx_opset_only) : cached_model_;
             auto &graph = p_model->MainGraph();
 
-//            std::cout << "graph resolve" << std::endl;
+            std::cout << "graph resolve" << std::endl;
             GraphResolve(graph, options, cache_enabled);
 
-//            std::cout << "add output" << std::endl;
+            std::cout << "add output" << std::endl;
             AllocOutput(graph);
 
 //            graph.SetGraphProtoSyncNeeded();
@@ -713,7 +713,8 @@ namespace ortki {
 
                 if(!has_run)
                 {
-                    std::cout << "No registered execution providers were able to run.";
+                    throw std::runtime_error("No registered execution providers were able to run. op:" +
+                    schema->Name() + ", maybe onnxruntime don't support this op in current providers");
                 }
 //                EXPECT_TRUE(has_run)
 //                        << "No registered execution providers were able to run.";
@@ -735,6 +736,11 @@ namespace ortki {
         auto schema_registry = ONNX_NAMESPACE::OpSchemaRegistry::Instance();
         auto schema = schema_registry->GetSchema(op_, opset_version_);
         auto out_size = schema->max_output();
+        // spec output size
+        if(output_size_ != INT32_MAX)
+        {
+            out_size = output_size_;
+        }
         // used for split
         if(out_size == INT32_MAX)
         {

@@ -11,7 +11,7 @@ public class TensorTest
 {
     public TensorTest(IHost host)
     {
-        // OrtKI.LoadDLL();
+        OrtKI.LoadDLL();
     }
 
     [Fact]
@@ -46,7 +46,22 @@ public class TensorTest
     {
         var tensor1 = Tensor.MakeTensor(new[] {1, 2, 3}, new[] {3});
         var tensor2 = Tensor.MakeTensor(new[] {2, 2, 3}, new[] {3});
-        var result = OrtKI.Binary(BinaryOp.Add, tensor1, tensor2);
+        var result = tensor1 + tensor2;
         Assert.Equal(new[] {3, 4, 6}, result.ToDense<int>().ToArray());
+    }
+
+    [Fact]
+    public void TestEmptyTensor()
+    {
+        var t = Tensor.Empty(new[] {2, 2, 1}, OrtDataType.Int32);
+        Assert.Equal(new[] {0, 0, 0, 0}, t.ToArray<int>());
+    }
+
+    [Fact]
+    public void TestEmptyArrToTensor()
+    {
+        var t = Tensor.MakeTensor(Array.Empty<float>());
+        Assert.Equal(t.Shape, new[] {0});
+        Assert.Equal(t.DataType, OrtDataType.Float);
     }
 }
