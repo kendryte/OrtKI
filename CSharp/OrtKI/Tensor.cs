@@ -5,6 +5,20 @@ using System.Linq;
 
 namespace OrtKISharp;
 
+public static class TensorHelper
+{
+    public static Tensor MakeOrtTensor<T>(T[] buffer, int[] shape) 
+        where T : unmanaged
+    {
+        return Tensor.MakeTensor(buffer, shape);
+    }
+    
+    public static Tensor OrtTensorFromScalar<T>(T x) where T : unmanaged
+    {
+        return Tensor.FromScalar(x);
+    }
+}
+
 public partial class Tensor : IDisposable
 {
     public IntPtr Handle { get; private set; }
@@ -18,6 +32,16 @@ public partial class Tensor : IDisposable
     public Tensor(ReadOnlySpan<byte> data, OrtDataType dataType, int[] shape)
     {
         (Handle, Mem) = MakeTensorHandle(data, dataType, shape);
+    }
+
+    public Tensor(float x)
+    {
+        FromScalar(x);
+    }
+
+    public static Tensor FromScalar<T>(T x) where T : unmanaged
+    {
+        return MakeTensor(new[] {x});
     }
 
     internal Tensor(IntPtr handle, IntPtr mem)

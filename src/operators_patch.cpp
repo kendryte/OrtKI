@@ -15,6 +15,7 @@ ortki::OrtKITensor * ortki_ResizeWithSizes(ortki::OrtKITensor *X, ortki::OrtKITe
     ortki::OpExecutor Resize("Resize");
     Resize.AddInput("X", X);
     Resize.AddInput("roi", roi);
+    Resize.AddOptionalInputEdge<float>();
     Resize.AddInput("sizes", sizes);
     Resize.AddAttribute("coordinate_transformation_mode", coordinate_transformation_mode);
     Resize.AddAttribute("cubic_coeff_a", cubic_coeff_a);
@@ -33,6 +34,7 @@ ortki::OrtKITensor * ortki_ResizeWithScales(ortki::OrtKITensor *X, ortki::OrtKIT
     Resize.AddInput("X", X);
     Resize.AddInput("roi", roi);
     Resize.AddInput("scales", scales);
+    Resize.AddOptionalInputEdge<float>();
     Resize.AddAttribute("coordinate_transformation_mode", coordinate_transformation_mode);
     Resize.AddAttribute("cubic_coeff_a", cubic_coeff_a);
     Resize.AddAttribute("exclude_outside", exclude_outside);

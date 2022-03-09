@@ -94,6 +94,22 @@ public partial class OrtKI
         return BitShift(a, b, "RIGHT");
     }
 
+    public static Tensor Random(int[] shape, OrtDataType dt = OrtDataType.Float)
+    {
+        return RandomNormal((long)dt, 0.0f, 1.0f, new Random().NextSingle(), 
+            shape.Select(x => (long)x).ToArray());
+    }
+    
+    public static Tensor Random(params int[] shape)
+    {
+        return Random(shape, OrtDataType.Float);
+    }
+
+    public static Tensor Random(int n, OrtDataType dt = OrtDataType.Float)
+    {
+        return Random(new[]{n}, dt);
+    }
+    
     
     [DllImport("libortki.so")]
     private static extern IntPtr ortki_ResizeWithScales(IntPtr X, IntPtr roi, IntPtr scales, String coordinate_transformation_mode, float cubic_coeff_a, long exclude_outside, float extrapolation_value, String mode, String nearest_mode);
