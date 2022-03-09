@@ -17,6 +17,16 @@ add_library(ortki SHARED ${SRCS})
 add_compile_definitions(ONNX_ML=1)
 add_compile_definitions(ONNX_NAMESPACE=onnx)
 set(protobuf_WITH_ZLIB OFF)
+set(onnxruntime_DISABLE_CONTRIB_OPS ON)
+set(onnxruntime_DISABLE_ML_OPS ON)
+set(onnxruntime_DISABLE_SPARSE_TENSORS ON)
+set(onnxruntime_DISABLE_OPTIONAL_TYPE ON)
+set(onnxruntime_MINIMAL_BUILD ON)
+set(onnxruntime_EXTENDED_MINIMAL_BUILD ON)
+set(onnxruntime_DISABLE_EXTERNAL_INITIALIZERS ON)
+set(onnxruntime_MINIMAL_BUILD_CUSTOM_OPS ON)
+set(onnxruntime_BUILD_OPSCHEMA_LIB OFF)
+
 
 add_subdirectory(onnxruntime/cmake/)
 message(STATUS "msg")
@@ -68,15 +78,14 @@ target_link_libraries(ortki
         onnx
         re2)
 
-add_executable(run src/main.cpp)
-target_link_libraries(run ortki)
+#if(BUILD_TEST_EXE)
+#    add_executable(run src/main.cpp)
+#    target_link_libraries(run ortki)
+#endif()
 
-
-#get_target_property(ptb libprotobuf ARCHIVE_OUTPUT_DIRECTORY)
-#get_target_property(ptbl libprotobuf-lite ARCHIVE_OUTPUT_DIRECTORY)
-#get_target_property(lptc libprotoc ARCHIVE_OUTPUT_DIRECTORY)
-#get_target_property(ptc protoc ARCHIVE_OUTPUT_DIRECTORY)
-#message("Code: ${ptb}")
-#message("Code: ${ptbl}")
-#message("Code: ${lptc}")
-#message("Code: ${ptc}")
+install(TARGETS ortki
+        EXPORT ${PROJECT_NAME}Targets
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        )
