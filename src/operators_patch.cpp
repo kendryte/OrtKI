@@ -1,6 +1,6 @@
 #include <operators_patch.h>
 
-ortki::OrtKITensorSeq *ortki_Split(ortki::OrtKITensor *input, ortki::OrtKITensor *split, long axis) {
+ortki::OrtKITensorSeq *ortki_Split(ortki::OrtKITensor *input, ortki::OrtKITensor *split, int64_t axis) {
     ortki::OpExecutor Split("Split");
     Split.AddInput("input", input);
     Split.AddInput("split", split);
@@ -10,7 +10,7 @@ ortki::OrtKITensorSeq *ortki_Split(ortki::OrtKITensor *input, ortki::OrtKITensor
 }
 
 ortki::OrtKITensor * ortki_ResizeWithSizes(ortki::OrtKITensor *X, ortki::OrtKITensor *roi, ortki::OrtKITensor *sizes,
-             const char *coordinate_transformation_mode, float cubic_coeff_a, long exclude_outside,
+             const char *coordinate_transformation_mode, float cubic_coeff_a, int64_t exclude_outside,
              float extrapolation_value, const char *mode, const char *nearest_mode) {
     ortki::OpExecutor Resize("Resize");
     Resize.AddInput("X", X);
@@ -28,7 +28,7 @@ ortki::OrtKITensor * ortki_ResizeWithSizes(ortki::OrtKITensor *X, ortki::OrtKITe
 
 
 ortki::OrtKITensor * ortki_ResizeWithScales(ortki::OrtKITensor *X, ortki::OrtKITensor *roi, ortki::OrtKITensor *scales,
-                                           const char *coordinate_transformation_mode, float cubic_coeff_a, long exclude_outside,
+                                           const char *coordinate_transformation_mode, float cubic_coeff_a, int64_t exclude_outside,
                                            float extrapolation_value, const char *mode, const char *nearest_mode) {
     ortki::OpExecutor Resize("Resize");
     Resize.AddInput("X", X);

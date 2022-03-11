@@ -119,7 +119,7 @@ class CAPISRC(LanguageTarget):
     def init_type_map(self):
         self.type_map = {
             OpSchema.AttrType.FLOAT: 'float',
-            OpSchema.AttrType.INT: 'long',
+            OpSchema.AttrType.INT: 'int64_t',
             OpSchema.AttrType.STRING: 'const char*',
             OpSchema.AttrType.TENSOR: self.tensor_type(),
             OpSchema.AttrType.GRAPH: 'Error',
@@ -128,7 +128,7 @@ class CAPISRC(LanguageTarget):
             # AttributeError: type object 'onnx.onnx_cpp2py_export.defs.AttrType' has no attribute 'TYPE_PROTO'
             # OpSchema.AttrType.TYPE_PROTO: 'Error',
             OpSchema.AttrType.FLOATS: 'float*',
-            OpSchema.AttrType.INTS: 'long*',
+            OpSchema.AttrType.INTS: 'int64_t*',
             OpSchema.AttrType.STRINGS: 'const char**',
             OpSchema.AttrType.TENSORS: self.array_type(self.tensor_type()),
             OpSchema.AttrType.GRAPHS: 'Error',
