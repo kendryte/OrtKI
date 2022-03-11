@@ -3,8 +3,7 @@ cmake_minimum_required(VERSION 3.13)
 project(OrtKI)
 
 set(CMAKE_CXX_STANDARD 20)
-set(SRCS src/main.cpp
-        src/op_executor.cpp
+set(SRCS src/op_executor.cpp
         src/allocator_manager.cpp
         src/default_providers.cpp
         src/environment.cpp
