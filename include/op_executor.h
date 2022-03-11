@@ -1083,15 +1083,14 @@ namespace ortki {
 //                                    testing::HasSubstr(expected_failure_string));
 //                    } else {
 //                        LOGS_DEFAULT(ERROR) << "Resolve failed with status: "
-//                                            << status.ErrorMessage();
+//                                            << sstd::cout <<tatus.ErrorMessage();
 //                        EXPECT_TRUE(status.IsOK()) << status.ErrorMessage();
 //                    }
 //                }
 
 
                 if (!status.IsOK()) {
-                    std::cout << status.ErrorMessage() << std::endl;
-                    throw std::runtime_error("status after cache_enabled is not ok");
+                    throw std::runtime_error("Graph Resolve Filed:" + status.ErrorMessage());
 //                    return;
                 }
             }

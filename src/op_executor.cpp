@@ -516,10 +516,10 @@ namespace ortki {
             auto p_model = !cache_enabled ? BuildGraph({}, allow_released_onnx_opset_only) : cached_model_;
             auto &graph = p_model->MainGraph();
 
-            std::cout << "graph resolve" << std::endl;
+//            std::cout << "graph resolve" << std::endl;
             GraphResolve(graph, options, cache_enabled);
 
-            std::cout << "add output" << std::endl;
+//            std::cout << "add output" << std::endl;
             AllocOutput(graph);
 
 //            graph.SetGraphProtoSyncNeeded();

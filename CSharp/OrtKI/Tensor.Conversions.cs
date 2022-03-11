@@ -20,4 +20,10 @@ public partial class Tensor
     
     public static implicit operator Tensor(float x) => new(x);
     
+    public static implicit operator Tensor(int[] x) => MakeTensor(x);
+    
+    public static implicit operator Tensor(long[] x) => MakeTensor(x);
+    
+    public static implicit operator Tensor(float[] x) => MakeTensor(x);
+    
 }

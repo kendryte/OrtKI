@@ -6,11 +6,6 @@ namespace OrtKITest;
 
 public class KernelTest
 {
-    public KernelTest()
-    {
-        OrtKI.LoadDLL();    
-    }
-    
     [Fact]
     public void TestCast()
     {

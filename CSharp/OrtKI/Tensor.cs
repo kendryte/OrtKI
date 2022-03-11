@@ -13,6 +13,12 @@ public static class TensorHelper
         return Tensor.MakeTensor(buffer, shape);
     }
     
+    public static Tensor MakeOrtTensor<T>(T[] buffer) 
+        where T : unmanaged
+    {
+        return Tensor.MakeTensor(buffer, new[] {buffer.Length});
+    }
+    
     public static Tensor OrtTensorFromScalar<T>(T x) where T : unmanaged
     {
         return Tensor.FromScalar(x);

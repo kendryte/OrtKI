@@ -64,4 +64,12 @@ public class TensorTest
         Assert.Equal(t.Shape, new[] {0});
         Assert.Equal(t.DataType, OrtDataType.Float);
     }
+
+    [Fact]
+    public void TestScalar()
+    {
+        var t = Tensor.FromScalar(1f);
+        Assert.Equal(1, t.Length);
+        Assert.Equal(OrtDataType.Float, t.DataType);
+    }
 }
