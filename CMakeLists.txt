@@ -3,7 +3,8 @@ cmake_minimum_required(VERSION 3.13)
 project(OrtKI)
 
 set(CMAKE_CXX_STANDARD 20)
-set(SRCS src/op_executor.cpp
+set(SRCS
+        src/op_executor.cpp
         src/allocator_manager.cpp
         src/default_providers.cpp
         src/environment.cpp
@@ -16,16 +17,6 @@ add_library(ortki SHARED ${SRCS})
 add_compile_definitions(ONNX_ML=1)
 add_compile_definitions(ONNX_NAMESPACE=onnx)
 set(protobuf_WITH_ZLIB OFF)
-set(onnxruntime_DISABLE_CONTRIB_OPS ON)
-set(onnxruntime_DISABLE_ML_OPS ON)
-set(onnxruntime_DISABLE_SPARSE_TENSORS ON)
-set(onnxruntime_DISABLE_OPTIONAL_TYPE ON)
-set(onnxruntime_MINIMAL_BUILD ON)
-set(onnxruntime_EXTENDED_MINIMAL_BUILD ON)
-set(onnxruntime_DISABLE_EXTERNAL_INITIALIZERS ON)
-set(onnxruntime_MINIMAL_BUILD_CUSTOM_OPS ON)
-set(onnxruntime_BUILD_OPSCHEMA_LIB OFF)
-
 
 add_subdirectory(onnxruntime/cmake/)
 message(STATUS "msg")
@@ -65,22 +56,27 @@ endmacro()
 get_all_targets(all_targets)
 message("All targets: ${all_targets}")
 
+if(MSVC)
+    target_link_libraries(ortki "/WHOLEARCHIVE ${ONNXRUNTIME_TARGETS}")
+elseif(APPLE)
+    target_link_libraries(ortki -Wl,-force_load ${ONNXRUNTIME_TARGETS})
+else()
+    target_link_libraries(ortki -Wl,--whole-archive ${ONNXRUNTIME_TARGETS} -Wl,--no-whole-archive)
+endif()
+
 target_link_libraries(ortki
-        "-Wl,--whole-archive"
-        ${ONNXRUNTIME_TARGETS}
         nsync_cpp
         dl
         absl_raw_hash_set
         absl_hash_function_defaults
-#        libprotobuf
-        "-Wl,--no-whole-archive"
-        onnx
-        re2)
+        re2
+        onnx)
 
-#if(BUILD_TEST_EXE)
-#    add_executable(run src/main.cpp)
-#    target_link_libraries(run ortki)
-#endif()
+
+if(BUILD_TEST_EXE)
+    add_executable(run src/main.cpp)
+    target_link_libraries(run ortki)
+endif()
 
 install(TARGETS ortki
         EXPORT ${PROJECT_NAME}Targets
