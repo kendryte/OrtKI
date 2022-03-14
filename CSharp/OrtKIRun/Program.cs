@@ -3,8 +3,13 @@
 // using OrtKISharp;
 //
 //
+
+using OrtKISharp;
 Console.WriteLine("Hello, World!");
-// OrtKI.LoadDLL();
+var t = Tensor.FromScalar(1f);
+var n = t + 1f;
+Console.WriteLine("Hello, World!");
+
 // var tensor1 = Tensor.MakeTensor(new[] {1, 2, 3}, new[] {3});
 // Console.WriteLine(tensor1.ToArray<int>().ToString());
 // Console.WriteLine(tensor1.ToArray<int>().Aggregate("", (s, i) => s + i + " "));

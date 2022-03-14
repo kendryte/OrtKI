@@ -3,6 +3,15 @@ cmake_minimum_required(VERSION 3.13)
 project(OrtKI)
 
 set(CMAKE_CXX_STANDARD 20)
+if(MSVC)
+    if(CMAKE_BUILD_TYPE MATCHES "Debug")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MDd")
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MD")
+    endif()
+    set(protobuf_MSVC_STATIC_RUNTIME OFF)
+endif()
+
 set(SRCS
         src/op_executor.cpp
         src/allocator_manager.cpp
@@ -58,22 +67,32 @@ message("All targets: ${all_targets}")
 
 
 if(MSVC)
-    list(TRANSFORM ONNXRUNTIME_TARGETS PREPEND /WHOLEARCHIVE:)
-#    message("STATUS${ONNXRUNTIME_TARGETS}")
-    target_link_libraries(ortki "/WHOLEARCHIVE ${ONNXRUNTIME_TARGETS}")
+    target_link_libraries(ortki ${ONNXRUNTIME_TARGETS})
+    target_link_options(ortki PUBLIC /WHOLEARCHIVE:$<TARGET_FILE:onnxruntime_providers>)
 elseif(APPLE)
     target_link_libraries(ortki -Wl,-force_load ${ONNXRUNTIME_TARGETS})
 else()
     target_link_libraries(ortki -Wl,--whole-archive ${ONNXRUNTIME_TARGETS} -Wl,--no-whole-archive)
 endif()
 
-target_link_libraries(ortki
-        nsync_cpp
-        dl
-        absl_raw_hash_set
-        absl_hash_function_defaults
-        re2
-        onnx)
+if(MSVC)
+    target_link_libraries(ortki
+            absl_raw_hash_set
+            absl_hash_function_defaults
+            re2
+            onnx)
+    if(CMAKE_BUILD_TYPE MATCHES "Debug")
+        target_link_libraries(ortki Dbghelp)
+    endif()
+else()
+    target_link_libraries(ortki
+            nsync_cpp
+            dl
+            absl_raw_hash_set
+            absl_hash_function_defaults
+            re2
+            onnx)
+endif()
 
 
 if(BUILD_TEST_EXE)

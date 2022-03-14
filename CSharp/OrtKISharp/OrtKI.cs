@@ -48,10 +48,10 @@ public enum UnaryOp
 
 public partial class OrtKI
 {
-    // [DllImport("libortki.so")]
+    // [DllImport("ortki")]
     // private static extern IntPtr ortki_Binary(BinaryOp op, IntPtr a, IntPtr b);
     //
-    // [DllImport("libortki.so")]
+    // [DllImport("ortki")]
     // private static extern IntPtr ortki_Unary(UnaryOp op, IntPtr input);
     //
     // public static Tensor Binary(BinaryOp op, Tensor a, Tensor b)
@@ -66,7 +66,7 @@ public partial class OrtKI
     //     return new Tensor(tensor);
     // }
     //
-    [DllImport("libortki.so")]
+    [DllImport("ortki")]
     private static extern IntPtr ortki_Split(IntPtr input, IntPtr split, long axis);
     
     public static Tensor[] Split(Tensor input, Tensor split, long axis){
@@ -111,10 +111,10 @@ public partial class OrtKI
     }
     
     
-    [DllImport("libortki.so")]
+    [DllImport("ortki")]
     private static extern IntPtr ortki_ResizeWithScales(IntPtr X, IntPtr roi, IntPtr scales, String coordinate_transformation_mode, float cubic_coeff_a, long exclude_outside, float extrapolation_value, String mode, String nearest_mode);
     
-    [DllImport("libortki.so")]
+    [DllImport("ortki")]
     private static extern IntPtr ortki_ResizeWithSizes(IntPtr X, IntPtr roi, IntPtr sizes, String coordinate_transformation_mode, float cubic_coeff_a, long exclude_outside, float extrapolation_value, String mode, String nearest_mode);
     
     public static Tensor ResizeWithScales(Tensor X, Tensor roi, Tensor scales, String coordinate_transformation_mode, float cubic_coeff_a, long exclude_outside, float extrapolation_value, String mode, String nearest_mode){
@@ -127,22 +127,11 @@ public partial class OrtKI
         return new Tensor(_tensor);
     }
     
-    [DllImport("libortki.so")]
+    [DllImport("ortki")]
     private static extern IntPtr ortki_BatchNormalization(IntPtr X, IntPtr scale, IntPtr B, IntPtr input_mean, IntPtr input_var, float epsilon, float momentum);
 
     public static Tensor BatchNormalization(Tensor X, Tensor scale, Tensor B, Tensor input_mean, Tensor input_var, float epsilon, float momentum){
         var _tensor = ortki_BatchNormalization(X.Handle, scale.Handle, B.Handle, input_mean.Handle, input_var.Handle, epsilon, momentum);
         return new Tensor(_tensor);
-    }
-    
-    public static void LoadDLL()
-    {
-        var assembly = typeof(Tensor).Assembly;
-        var path = new DllImportSearchPath();
-        var ok = NativeLibrary.TryLoad("/home/homura/Code/OrtKI/cmake-build-debug/libortki.so", assembly, null, out var res1);
-        if (!ok)
-        {
-            throw new DllNotFoundException("libortki not found");
-        }
     }
 }

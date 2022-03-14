@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\OrtKI\OrtKI.csproj" />
+        <ProjectReference Include="..\OrtKISharp\OrtKISharp.csproj" />
     </ItemGroup>
 
     <PropertyGroup>

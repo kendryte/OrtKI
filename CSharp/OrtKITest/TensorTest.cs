@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Microsoft.Extensions.Hosting;
 using OrtKISharp;
 using Xunit;
 
@@ -9,11 +8,6 @@ namespace OrtKITest;
 
 public class TensorTest
 {
-    public TensorTest(IHost host)
-    {
-        OrtKI.LoadDLL();
-    }
-
     [Fact]
     public void TestConstructor()
     {
@@ -69,7 +63,23 @@ public class TensorTest
     public void TestScalar()
     {
         var t = Tensor.FromScalar(1f);
+        var n = t + 1;
         Assert.Equal(1, t.Length);
         Assert.Equal(OrtDataType.Float, t.DataType);
+    }
+
+    [Fact]
+    public void TestToDiffTypeArray()
+    {
+        var t = Tensor.MakeTensor(new long[] {1, 2, 3});
+        Assert.Equal(new[] {1, 2, 3}, t.ToArray<int>());
+    }
+
+    [Fact]
+    public void TestTensorCompare()
+    {
+        var t1 = Tensor.MakeTensor(new long[] {1, 2, 3}); 
+        var t2 = Tensor.MakeTensor(new long[] {1, 2, 3});
+        Assert.Equal(t1, t2);
     }
 }

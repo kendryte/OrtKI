@@ -1090,6 +1090,7 @@ namespace ortki {
 
 
                 if (!status.IsOK()) {
+                    std::cout << status.ErrorMessage() << std::endl;
                     throw std::runtime_error("Graph Resolve Filed:" + status.ErrorMessage());
 //                    return;
                 }

@@ -1,7 +1,9 @@
+using System.Collections;
 using System.Numerics.Tensors;
 using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 using System.Linq;
+using System.Reflection;
 
 namespace OrtKISharp;
 
@@ -25,7 +27,7 @@ public static class TensorHelper
     }
 }
 
-public partial class Tensor : IDisposable
+public partial class Tensor : IDisposable, IEquatable<Tensor>
 {
     public IntPtr Handle { get; private set; }
 
@@ -114,12 +116,12 @@ public partial class Tensor : IDisposable
         return Mem != IntPtr.Zero ? Mem : tensor_buffer(Handle);
     }
     
-    [DllImport("libortki.so")]
+    [DllImport("ortki")]
     internal static extern unsafe IntPtr make_tensor(
         [In] IntPtr buffer, OrtDataType dataType,
         [In] int* shape, int shape_size);
 
-    [DllImport("libortki.so")]
+    [DllImport("ortki")]
     internal static extern unsafe IntPtr make_tensor_empty(OrtDataType dataType, [In] int* shape, int rank);
 
     public static unsafe Tensor Empty(int[] shape, OrtDataType dataType = OrtDataType.Float)
@@ -130,22 +132,22 @@ public partial class Tensor : IDisposable
         }
     }
 
-    [DllImport("libortki.so")]
+    [DllImport("ortki")]
     internal static extern void tensor_dispose(IntPtr tensor);
 
-    [DllImport("libortki.so")]
+    [DllImport("ortki")]
     internal static extern OrtDataType tensor_data_type(IntPtr tensor);
     
-    [DllImport("libortki.so")]
+    [DllImport("ortki")]
     internal static extern unsafe IntPtr tensor_shape(IntPtr tensor, int *output);
     
-    [DllImport("libortki.so")]
+    [DllImport("ortki")]
     internal static extern int tensor_rank(IntPtr tensor);
     
-    [DllImport("libortki.so")]
+    [DllImport("ortki")]
     internal static extern IntPtr tensor_buffer(IntPtr tensor);
     
-    [DllImport("libortki.so")]
+    [DllImport("ortki")]
     internal static extern IntPtr tensor_to_type(IntPtr tensor, OrtDataType dataType);
 
     public OrtDataType DataType => tensor_data_type(Handle);
@@ -212,11 +214,24 @@ public partial class Tensor : IDisposable
     public unsafe DenseTensor<T> ToDense<T>()
         where T : unmanaged
     {
+        var t = ToDenseImpl<T>();
+        if (typeof(T) == TypeUtil.ToType(DataType))
+        {
+            return t;
+        }
+        else
+        {
+            return ToType(TypeUtil.FromType(typeof(T))).ToDenseImpl<T>();
+        }
+    }
+
+    private unsafe DenseTensor<T> ToDenseImpl<T>()
+    {
         var tensor = new DenseTensor<T>(Length);
         new Span<T>(GetMemory().ToPointer(), Length).CopyTo(tensor.Buffer.Span);
         return tensor;
     }
-
+    
     public unsafe T[] ToArray<T>() where T : unmanaged
     {
         return ToDense<T>().ToArray();
@@ -231,19 +246,42 @@ public partial class Tensor : IDisposable
     {
         return this + Empty(shape);
     }
+
+    public bool Equals(Tensor? other)
+    {
+        if (ReferenceEquals(null, other)) return false;
+        if (ReferenceEquals(this, other)) return true;
+        if (!(StructuralComparisons.StructuralEqualityComparer.Equals(Shape, other.Shape) 
+              && DataType == other.DataType)) return false;
+        if (GetMemory() == other.GetMemory()) return true;
+        return StructuralComparisons.StructuralEqualityComparer.Equals(BufferToArray(), other.BufferToArray());
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (ReferenceEquals(null, obj)) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != this.GetType()) return false;
+        return Equals((Tensor) obj);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Handle, Mem);
+    }
 }
 
 public class TensorSeq : IDisposable
 {
     IntPtr Handle;
     
-    [DllImport("libortki.so")]
+    [DllImport("ortki")]
     private static extern void tensor_seq_dispose(IntPtr seq);
     
-    [DllImport("libortki.so")]
+    [DllImport("ortki")]
     private static extern int tensor_seq_size(IntPtr seq);
     
-    [DllImport("libortki.so")]
+    [DllImport("ortki")]
     private static extern IntPtr tensor_seq_get_value(IntPtr seq, int index);
 
     internal Tensor GetValue(int index)

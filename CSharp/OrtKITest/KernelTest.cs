@@ -77,7 +77,6 @@ public class KernelTest
     {
         var input = Tensor.MakeTensor(new[]{1,1,1,1,1,1,1,1,1,},new[] {1, 1, 3, 3});
         var result = OrtKI.Squeeze(input, Tensor.Empty(new[]{0}, OrtDataType.Int64));
-        // var result = OrtKI.Squeeze(input, Tensor.MakeTensor(new long[] {0, 1}));
         Assert.True(true);
     }
 }

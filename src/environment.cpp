@@ -16,7 +16,7 @@ std::unique_ptr<Ort::Env> make_ort_env()
     return std::make_unique<Ort::Env>(&tpo, ORT_LOGGING_LEVEL_WARNING, "Default");
 }
 
-std::unique_ptr<Ort::Env> ort_env = make_ort_env();
+std::unique_ptr<Ort::Env> ort_env;
 
 namespace ortki
 {
