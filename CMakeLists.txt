@@ -56,7 +56,10 @@ endmacro()
 get_all_targets(all_targets)
 message("All targets: ${all_targets}")
 
+
 if(MSVC)
+    list(TRANSFORM ONNXRUNTIME_TARGETS PREPEND /WHOLEARCHIVE:)
+#    message("STATUS${ONNXRUNTIME_TARGETS}")
     target_link_libraries(ortki "/WHOLEARCHIVE ${ONNXRUNTIME_TARGETS}")
 elseif(APPLE)
     target_link_libraries(ortki -Wl,-force_load ${ONNXRUNTIME_TARGETS})
