@@ -12,8 +12,9 @@ if(MSVC)
         message(STATUS"MSVC into Release /MD")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MD")
     endif()
-    set(protobuf_MSVC_STATIC_RUNTIME OFF)
+    set(protobuf_MSVC_STATIC_RUNTIME OFF CACHE BOOL "")
 endif()
+set(protobuf_WITH_ZLIB OFF CACHE BOOL "")
 
 set(SRCS
         src/op_executor.cpp
@@ -28,8 +29,6 @@ add_library(ortki SHARED ${SRCS})
 
 add_compile_definitions(ONNX_ML=1)
 add_compile_definitions(ONNX_NAMESPACE=onnx)
-set(protobuf_WITH_ZLIB OFF)
-add_compile_options(/FC)
 
 add_subdirectory(onnxruntime/cmake/)
 message(STATUS "msg")

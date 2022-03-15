@@ -21,6 +21,8 @@ jobs:
       - name: Add msbuild to PATH
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1.9.0
+        with:
+          arch: win64
 
       - name: Install Conan
         id: conan
@@ -32,7 +34,7 @@ jobs:
       - name: Configure CMake
         shell: bash
         working-directory: ${{github.workspace}}/build
-        run: cmake .. -G Ninja -DCMAKE_BUILD_TYPE=$BUILD_TYPE -Donnxruntime_BUILD_UNIT_TESTS=OFF -DBUILD_TEST_EXE=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+        run: cmake .. -G Ninja -DCMAKE_BUILD_TYPE=$BUILD_TYPE -Donnxruntime_BUILD_UNIT_TESTS=OFF -DBUILD_TEST_EXE=OFF
 
 #      - name: PrintCompile1
 #        shell: bash
