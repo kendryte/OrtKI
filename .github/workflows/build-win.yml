@@ -32,12 +32,17 @@ jobs:
       - name: Configure CMake
         shell: bash
         working-directory: ${{github.workspace}}/build
-        run: cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE -Donnxruntime_BUILD_UNIT_TESTS=OFF -DBUILD_TEST_EXE=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+        run: cmake .. -G Ninja -DCMAKE_BUILD_TYPE=$BUILD_TYPE -Donnxruntime_BUILD_UNIT_TESTS=OFF -DBUILD_TEST_EXE=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
-      - name: PrintCompile
-        shell: bash
-        working-directory: ${{github.workspace}}/build
-        run: ls && cat compile_commands.json
+#      - name: PrintCompile1
+#        shell: bash
+#        working-directory: ${{github.workspace}}/build
+#        run: cmd //c tree
+#
+#      - name: PrintCompile2
+#        shell: bash
+#        working-directory: ${{github.workspace}}/build
+#        run: cat compile_commands.json
 
       - name: Build
         shell: bash
