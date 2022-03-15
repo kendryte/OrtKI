@@ -37,7 +37,7 @@ jobs:
       - name: PrintCompile
         shell: bash
         working-directory: ${{github.workspace}}/build
-        run: cat compile_commands.json
+        run: ls && cat compile_commands.json
 
       - name: Build
         shell: bash
