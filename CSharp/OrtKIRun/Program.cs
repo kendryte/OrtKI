@@ -6,6 +6,13 @@
 
 using OrtKISharp;
 Console.WriteLine("Hello, World!");
+OrtKI.LoadDLL();
+var a = Tensor.MakeTensor(new[] {1f});
+var b = Tensor.MakeTensor(new[] {1f});
+Console.WriteLine("init");
+var c = a + b;
+Console.WriteLine("add");
+
 var t = Tensor.FromScalar(1f);
 var n = t + 1f;
 Console.WriteLine("Hello, World!");

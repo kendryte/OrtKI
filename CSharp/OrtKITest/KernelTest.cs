@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using OrtKISharp;
 using Xunit;
 
@@ -78,5 +79,27 @@ public class KernelTest
         var input = Tensor.MakeTensor(new[]{1,1,1,1,1,1,1,1,1,},new[] {1, 1, 3, 3});
         var result = OrtKI.Squeeze(input, Tensor.Empty(new[]{0}, OrtDataType.Int64));
         Assert.True(true);
+    }
+
+    [Fact]
+    public void TestOneHot()
+    {
+        var indices = Tensor.MakeTensor(new[] {3, 2, 4, 0});
+        var depth = Tensor.MakeTensor(new[] {5});
+        var value = Tensor.MakeTensor(new[] {0.660595596f, 0.641027808f});
+        var axis = 0L;
+        OrtKI.OneHot(indices, depth, value, axis);
+    }
+
+    [Fact]
+    public void TestSplit()
+    {
+        // var input = Tensor.MakeTensor(Enumerable.Range(0, 4 * 8 * 8).ToArray(), new[] {4, 8, 8});
+        
+        var input = Tensor.MakeTensor(Enumerable.Range(0, 8).ToArray(), new[] {4, 2});
+        
+        var axis = 0;
+        var split = Tensor.MakeTensor(new long[] {1, 3});
+        var result = OrtKI.Split(input, split, axis);
     }
 }

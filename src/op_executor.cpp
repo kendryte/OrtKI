@@ -12,6 +12,8 @@ namespace ortki {
 #define ASSERT_TRUE(a) \
     std::cout
 
+#define DEBUG(s) std::cout << s << std::endl;
+
 #define CHECK_STATUS_OK(function)                  \
   do {                                              \
     Status _tmp_status = (function);                \
@@ -38,10 +40,10 @@ namespace ortki {
     void OpExecutor::FillFeedsAndOutputNames(
             std::unordered_map<std::string, OrtValue> &feeds,
             std::vector<std::string> &output_names) {
-        for (auto &output: output_data_) {
-            if (output.def_.Exists())
-                output_names.push_back(output.def_.Name());
-        }
+//        for (auto &output: output_data_) {
+//            DEBUG(output.def_.Name());
+//            output_names.push_back(output.def_.Name());
+//        }
 
         FillFeeds(feeds);
     }
@@ -352,11 +354,11 @@ namespace ortki {
         default_run_options.run_log_verbosity_level = 1;
 
         std::vector<OrtValue> fetches;
-        for (int i = 0; i < num_run_calls_; ++i) {
-            fetches.clear();
-            status =
-                    session_object.Run(run_options ? *run_options : default_run_options,
-                                       feeds, output_names, &fetches);
+//        for (int i = 0; i < num_run_calls_; ++i) {
+        fetches.clear();
+        status =
+                session_object.Run(run_options ? *run_options : default_run_options,
+                                   feeds, output_names, &fetches);
 
 //            if (status.IsOK()) {
 //                return fetches;
@@ -378,7 +380,7 @@ namespace ortki {
 ////                }
 //                return {};
 //            }
-        }
+//        }
 
         // Verify the outputs
         // Todo: support check output with map/sequence/....
@@ -440,7 +442,7 @@ namespace ortki {
 //                }
 //            }
 //        }
-
+        DEBUG(fetches.size())
         return fetches;
     }
 
@@ -459,7 +461,7 @@ namespace ortki {
         Graph::ResolveOptions options = {};
         options.override_types = true;
         return Run(so, excluded_provider_types,
-            run_options, execution_providers, options);
+                   run_options, execution_providers, options);
     }
 
     std::vector<OrtValue> OpExecutor::Run(
@@ -473,67 +475,63 @@ namespace ortki {
             /*out*/ size_t *number_of_shared_pre_packed_weights_counter) {
         std::string cur_provider = "not set";
         // try
-        {
+//        {
 #ifndef NDEBUG
-            run_called_ = true;
+        run_called_ = true;
 #endif
 
 
-            // IsAllowReleasedONNXOpsetsOnlySet() checks for the appropriate env var in the process (i.e.) process-wide
-            // `IsAllowReleasedONNXOpsetsOnlySetForThisTest()` is for this specific OpExecutor instance
-            // We will only support released opsets iff IsAllowReleasedONNXOpsetsOnlySet() and `IsAllowReleasedONNXOpsetsOnlySetForThisTest()`
-            // are both true
-            auto allow_released_onnx_opset_only =
-                    IsAllowReleasedONNXOpsetsOnlySetForThisTest() &&
-                    model_load_utils::IsAllowReleasedONNXOpsetsOnlySet();
+        // IsAllowReleasedONNXOpsetsOnlySet() checks for the appropriate env var in the process (i.e.) process-wide
+        // `IsAllowReleasedONNXOpsetsOnlySetForThisTest()` is for this specific OpExecutor instance
+        // We will only support released opsets iff IsAllowReleasedONNXOpsetsOnlySet() and `IsAllowReleasedONNXOpsetsOnlySetForThisTest()`
+        // are both true
+        auto allow_released_onnx_opset_only =
+                IsAllowReleasedONNXOpsetsOnlySetForThisTest() &&
+                model_load_utils::IsAllowReleasedONNXOpsetsOnlySet();
 
-            if (allow_released_onnx_opset_only) {
-                auto &onnx_released_versions =
-                        ONNX_NAMESPACE::OpSchemaRegistry::DomainToVersionRange::Instance().LastReleaseVersionMap();
-                auto it = onnx_released_versions.find(domain_);
-                if (it != onnx_released_versions.end() && opset_version_ > it->second) {
-                    LOGS_DEFAULT(WARNING)
-                        << "Encountered model with opset version greater than released onnx opset version. "
-                        << "Skipping this test. To run this test set environment variable ALLOW_RELEASED_ONNX_OPSET_ONLY to \"0\". "
-                        << "Opset version of current model is " << opset_version_
-                        << ", the latest released onnx opset version is " << it->second << ".";
-                    // GTEST_SKIP();
-                    throw std::runtime_error("opset version error");
-                }
+        if (allow_released_onnx_opset_only) {
+            auto &onnx_released_versions =
+                    ONNX_NAMESPACE::OpSchemaRegistry::DomainToVersionRange::Instance().LastReleaseVersionMap();
+            auto it = onnx_released_versions.find(domain_);
+            if (it != onnx_released_versions.end() && opset_version_ > it->second) {
+                LOGS_DEFAULT(WARNING)
+                    << "Encountered model with opset version greater than released onnx opset version. "
+                    << "Skipping this test. To run this test set environment variable ALLOW_RELEASED_ONNX_OPSET_ONLY to \"0\". "
+                    << "Opset version of current model is " << opset_version_
+                    << ", the latest released onnx opset version is " << it->second << ".";
+                // GTEST_SKIP();
+                throw std::runtime_error("opset version error");
             }
+        }
 
 
-            InitOutput();
-            auto schema_registry = ONNX_NAMESPACE::OpSchemaRegistry::Instance();
-            auto schema = schema_registry->GetSchema("Add", 15);
-            auto max_input = schema->max_input();
-            auto max_output = schema->max_output();
+        InitOutput();
+        auto schema_registry = ONNX_NAMESPACE::OpSchemaRegistry::Instance();
+        auto schema = schema_registry->GetSchema(op_, 15);
+        DEBUG("init output")
+        fetches_.clear();
+        bool cache_enabled = cached_model_ != nullptr;
+        auto p_model = !cache_enabled ? BuildGraph({}, allow_released_onnx_opset_only) : cached_model_;
+        auto &graph = p_model->MainGraph();
 
-//            std::cout << "add output" << std::endl;
-            // AddOutput("C", new OrtKITensor(new int(), onnx::TensorProto_DataType_INT32, std::vector<int64_t>{}));
-            fetches_.clear();
-            bool cache_enabled = cached_model_ != nullptr;
-            auto p_model = !cache_enabled ? BuildGraph({}, allow_released_onnx_opset_only) : cached_model_;
-            auto &graph = p_model->MainGraph();
+        std::vector<std::string> output_names;
 
-//            std::cout << "graph resolve" << std::endl;
-            GraphResolve(graph, options, cache_enabled);
+        for (auto &output: output_data_) {
+            DEBUG(output.def_.Name());
+            output_names.push_back(output.def_.Name());
+        }
 
-//            std::cout << "add output" << std::endl;
-            AllocOutput(graph);
+        DEBUG("Graph resolve")
+        GraphResolve(graph, options, cache_enabled);
 
-//            graph.SetGraphProtoSyncNeeded();
-//            graph.SetGraphResolveNeeded();
-//
-//            GraphResolve(graph, options, cache_enabled);
+        AllocOutput(graph);
 
-            // Hookup the inputs and outputs
-            std::unordered_map<std::string, OrtValue> feeds;
-            std::vector<std::string> output_names;
-            FillFeedsAndOutputNames(feeds, output_names);
-            // Run the model
-            static const std::string all_provider_types[] = {
-                    kCpuExecutionProvider,
+        // Hookup the inputs and outputs
+        std::unordered_map<std::string, OrtValue> feeds;
+        FillFeedsAndOutputNames(feeds, output_names);
+        // Run the model
+        static const std::string all_provider_types[] = {
+                kCpuExecutionProvider,
 //                    kCudaExecutionProvider,
 //                    kDnnlExecutionProvider,
 //                    kNupharExecutionProvider,
@@ -545,79 +543,78 @@ namespace ortki {
 //                    kNnapiExecutionProvider,
 //                    kRocmExecutionProvider,
 //                    kCoreMLExecutionProvider,
-            };
+        };
 
-            bool has_run = false;
+        bool has_run = false;
 
-            if (execution_providers) {
-                for (auto &entry: *execution_providers) {
-                    if (entry->Type() == kDmlExecutionProvider) {
-                        so.enable_mem_pattern = false;
-                        so.execution_mode = ExecutionMode::ORT_SEQUENTIAL;
-                        break;
-                    }
+        if (execution_providers) {
+            for (auto &entry: *execution_providers) {
+                if (entry->Type() == kDmlExecutionProvider) {
+                    so.enable_mem_pattern = false;
+                    so.execution_mode = ExecutionMode::ORT_SEQUENTIAL;
+                    break;
                 }
+            }
 
+            InferenceSession session_object{so, GetEnvironment()};
+
+            if (add_prepacked_shared_container_to_sessions_) {
+                CHECK_STATUS_OK(session_object.AddPrePackedWeightsContainer(&prepacked_weights_container_));
+            }
+
+            if (execution_providers->empty()) {
+                ORT_THROW("Empty execution providers vector");
+            }
+//                ASSERT_TRUE(!execution_providers->empty())
+//                        << "Empty execution providers vector.";
+            std::string provider_types;
+
+            for (auto &entry: *execution_providers) {
+                provider_types += entry->Type() + ":";
+                CHECK_STATUS_OK(session_object.RegisterExecutionProvider(std::move(entry)));
+            }
+
+//                std::cout << "Execute" << std::endl;
+            fetches_ = ExecuteModel<InferenceSession>(
+                    *p_model, session_object,
+                    run_options, feeds, output_names, provider_types, allow_released_onnx_opset_only);
+
+            // After the model has initialized (happens in ExecuteModel),
+            // we should be able to tell how many constant initializers were pre-packed
+            // and out of these pre-packed ones how many of them used a "cached" version
+            // from the shared container.
+            // Populate these value if the user has requested this information.
+            if (number_of_pre_packed_weights_counter) {
+                *number_of_pre_packed_weights_counter =
+                        session_object.GetSessionState().GetNumberOfPrepacksCounter();
+            }
+
+            if (number_of_shared_pre_packed_weights_counter) {
+                *number_of_shared_pre_packed_weights_counter =
+                        session_object.GetSessionState().GetUsedSharedPrePackedWeightCounter();
+            }
+
+        } else {
+            for (const std::string &provider_type: all_provider_types) {
+                if (excluded_provider_types.count(provider_type) > 0)
+                    continue;
+
+                cur_provider = provider_type;
+
+                if (provider_type == kDmlExecutionProvider) {
+                    so.enable_mem_pattern = false;
+                    so.execution_mode = ExecutionMode::ORT_SEQUENTIAL;
+                }
                 InferenceSession session_object{so, GetEnvironment()};
 
                 if (add_prepacked_shared_container_to_sessions_) {
                     CHECK_STATUS_OK(session_object.AddPrePackedWeightsContainer(&prepacked_weights_container_));
                 }
 
-                if(execution_providers->empty())
-                {
-                    ORT_THROW("Empty execution providers vector");
-                }
-//                ASSERT_TRUE(!execution_providers->empty())
-//                        << "Empty execution providers vector.";
-                std::string provider_types;
+                for (auto &custom_session_registry: custom_session_registries_)
+                    CHECK_PROVIDER_STATUS_OK(session_object.RegisterCustomRegistry(custom_session_registry));
 
-                for (auto &entry: *execution_providers) {
-                    provider_types += entry->Type() + ":";
-                    CHECK_STATUS_OK(session_object.RegisterExecutionProvider(std::move(entry)));
-                }
-
-//                std::cout << "Execute" << std::endl;
-                fetches_ = ExecuteModel<InferenceSession>(
-                        *p_model, session_object,
-                        run_options, feeds, output_names, provider_types, allow_released_onnx_opset_only);
-
-                // After the model has initialized (happens in ExecuteModel),
-                // we should be able to tell how many constant initializers were pre-packed
-                // and out of these pre-packed ones how many of them used a "cached" version
-                // from the shared container.
-                // Populate these value if the user has requested this information.
-                if (number_of_pre_packed_weights_counter) {
-                    *number_of_pre_packed_weights_counter =
-                            session_object.GetSessionState().GetNumberOfPrepacksCounter();
-                }
-
-                if (number_of_shared_pre_packed_weights_counter) {
-                    *number_of_shared_pre_packed_weights_counter =
-                            session_object.GetSessionState().GetUsedSharedPrePackedWeightCounter();
-                }
-
-            } else {
-                for (const std::string &provider_type: all_provider_types) {
-                    if (excluded_provider_types.count(provider_type) > 0)
-                        continue;
-
-                    cur_provider = provider_type;
-
-                    if (provider_type == kDmlExecutionProvider) {
-                        so.enable_mem_pattern = false;
-                        so.execution_mode = ExecutionMode::ORT_SEQUENTIAL;
-                    }
-                    InferenceSession session_object{so, GetEnvironment()};
-
-                    if (add_prepacked_shared_container_to_sessions_) {
-                        CHECK_STATUS_OK(session_object.AddPrePackedWeightsContainer(&prepacked_weights_container_));
-                    }
-
-                    for (auto &custom_session_registry: custom_session_registries_)
-                        CHECK_PROVIDER_STATUS_OK(session_object.RegisterCustomRegistry(custom_session_registry));
-
-                    std::unique_ptr<IExecutionProvider> execution_provider = DefaultCpuExecutionProvider();
+                std::unique_ptr<IExecutionProvider> execution_provider = DefaultCpuExecutionProvider();
 //                    if (provider_type == onnxruntime::kCpuExecutionProvider)
 //                        execution_provider = DefaultCpuExecutionProvider();
 //                    else if (provider_type == onnxruntime::kCudaExecutionProvider)
@@ -646,15 +643,15 @@ namespace ortki {
 //                    if (execution_provider == nullptr)
 //                        continue;
 
-                    bool valid = true;
+                bool valid = true;
 
-                    // set execution provider for all nodes in the graph
-                    for (auto &node: graph.Nodes()) {
-                        if (node.OpType() == kConstant)
-                            continue;
+                // set execution provider for all nodes in the graph
+                for (auto &node: graph.Nodes()) {
+                    if (node.OpType() == kConstant)
+                        continue;
 
-                        // if node is not registered for the provider, skip
-                        node.SetExecutionProviderType(provider_type);
+                    // if node is not registered for the provider, skip
+                    node.SetExecutionProviderType(provider_type);
 //                        if (provider_type == onnxruntime::kOpenVINOExecutionProvider ||
 //                            provider_type == onnxruntime::kTensorrtExecutionProvider ||
 //                            provider_type == onnxruntime::kNupharExecutionProvider ||
@@ -663,64 +660,64 @@ namespace ortki {
 //                            provider_type == onnxruntime::kCoreMLExecutionProvider ||
 //                            provider_type == onnxruntime::kDnnlExecutionProvider)
 //                            continue;
-                        auto reg = execution_provider->GetKernelRegistry();
-                        if (!KernelRegistry::HasImplementationOf(*reg, node, execution_provider->Type())) {
-                            valid = false;
-                            for (auto &custom_session_registry: custom_session_registries_) {
-                                if (KernelRegistry::HasImplementationOf(*custom_session_registry->GetKernelRegistry(),
-                                                                        node, execution_provider->Type())) {
-                                    valid = true;
-                                    break;
-                                }
-                            }
-
-                            if (!valid) {
+                    auto reg = execution_provider->GetKernelRegistry();
+                    if (!KernelRegistry::HasImplementationOf(*reg, node, execution_provider->Type())) {
+                        valid = false;
+                        for (auto &custom_session_registry: custom_session_registries_) {
+                            if (KernelRegistry::HasImplementationOf(*custom_session_registry->GetKernelRegistry(),
+                                                                    node, execution_provider->Type())) {
+                                valid = true;
                                 break;
                             }
                         }
+
+                        if (!valid) {
+                            break;
+                        }
                     }
+                }
 
-                    if (!valid)
-                        continue;
+                if (!valid)
+                    continue;
 
-                    for (auto &custom_session_registry: custom_session_registries_)
-                        CHECK_PROVIDER_STATUS_OK(session_object.RegisterCustomRegistry(custom_session_registry));
+                for (auto &custom_session_registry: custom_session_registries_)
+                    CHECK_PROVIDER_STATUS_OK(session_object.RegisterCustomRegistry(custom_session_registry));
 
-                    has_run = true;
+                has_run = true;
 
-                    CHECK_PROVIDER_STATUS_OK(session_object.RegisterExecutionProvider(std::move(execution_provider)));
-                    fetches_ = ExecuteModel<InferenceSession>(
-                            *p_model, session_object,
-                            run_options, feeds, output_names, provider_type, allow_released_onnx_opset_only);
+                CHECK_PROVIDER_STATUS_OK(session_object.RegisterExecutionProvider(std::move(execution_provider)));
+                fetches_ = ExecuteModel<InferenceSession>(
+                        *p_model, session_object,
+                        run_options, feeds, output_names, provider_type, allow_released_onnx_opset_only);
 //                    std::cout << "Execute" << std::endl;
-                    // After the model has initialized (happens in ExecuteModel),
-                    // we should be able to tell how many constant initializers were pre-packed
-                    // and out of these pre-packed ones how many of them used a "cached" version
-                    // from the shared container.
-                    // Populate these value if the user has requested this information.
-                    if (number_of_pre_packed_weights_counter) {
-                        *number_of_pre_packed_weights_counter =
-                                session_object.GetSessionState().GetNumberOfPrepacksCounter();
-                    }
-
-                    if (number_of_shared_pre_packed_weights_counter) {
-                        *number_of_shared_pre_packed_weights_counter =
-                                session_object.GetSessionState().GetUsedSharedPrePackedWeightCounter();
-                    }
-
-                    cur_provider = "not set";
+                // After the model has initialized (happens in ExecuteModel),
+                // we should be able to tell how many constant initializers were pre-packed
+                // and out of these pre-packed ones how many of them used a "cached" version
+                // from the shared container.
+                // Populate these value if the user has requested this information.
+                if (number_of_pre_packed_weights_counter) {
+                    *number_of_pre_packed_weights_counter =
+                            session_object.GetSessionState().GetNumberOfPrepacksCounter();
                 }
 
-                if(!has_run)
-                {
-                    throw std::runtime_error("No registered execution providers were able to run. op:" +
-                    schema->Name() + ", maybe onnxruntime don't support this op in current providers");
+                if (number_of_shared_pre_packed_weights_counter) {
+                    *number_of_shared_pre_packed_weights_counter =
+                            session_object.GetSessionState().GetUsedSharedPrePackedWeightCounter();
                 }
+
+                cur_provider = "not set";
+            }
+
+            if (!has_run) {
+                throw std::runtime_error("No registered execution providers were able to run. op:" +
+                                         schema->Name() +
+                                         ", maybe onnxruntime don't support this op in current providers");
+            }
 //                EXPECT_TRUE(has_run)
 //                        << "No registered execution providers were able to run.";
-            }
-            // p_model->MainGraph().GetOutputs()
         }
+        // p_model->MainGraph().GetOutputs()
+//        }
 //        ORT_CATCH(const std::exception &ex) {
 //            ORT_HANDLE_EXCEPTION([&]() {
 //                std::cerr << ex.what() << "\nProvider:" << cur_provider << "\n";
@@ -731,21 +728,17 @@ namespace ortki {
         return fetches_;
     }
 
-    void OpExecutor::InitOutput()
-    {
+    void OpExecutor::InitOutput() {
         auto schema_registry = ONNX_NAMESPACE::OpSchemaRegistry::Instance();
         auto schema = schema_registry->GetSchema(op_, opset_version_);
         auto out_size = schema->max_output();
         // spec output size
-        if(output_size_ != INT32_MAX)
-        {
+        if (output_size_ != INT32_MAX) {
             out_size = output_size_;
         }
         // used for split
-        if(out_size == INT32_MAX)
-        {
-            if(output_size_ == 0)
-            {
+        if (out_size == INT32_MAX) {
+            if (output_size_ == 0) {
                 throw std::runtime_error("output size should not be zero, in op" + schema->Name());
             }
             out_size = output_size_;
@@ -753,7 +746,11 @@ namespace ortki {
         for (int i = 0; i < out_size; ++i) {
             auto &&output_name = schema->outputs()[i].GetName();
             auto mltype = DataTypeImpl::GetType<float>();
-            output_data_.emplace_back(NodeArg("node" + std::to_string(i), mltype->GetTypeProto()), OrtValue());
+            auto name = "output" + std::to_string(i);
+            output_data_.emplace_back(NodeArg(name, mltype->GetTypeProto()), OrtValue());
+            DEBUG("Init Output")
+            DEBUG(name)
+            DEBUG(output_data_[i].def_.Name())
         }
     }
 
@@ -762,6 +759,9 @@ namespace ortki {
             auto out_info = graph.GetOutputs()[0];
             auto proto_shape = out_info->Shape();
             output_data_[i].def_ = NodeArg(out_info->Name(), out_info->TypeAsProto());
+            DEBUG("Alloc Output")
+            DEBUG(out_info->Name())
+            DEBUG(output_data_[i].def_.Name())
             // output_data_[i].def_.SetShape(*proto_shape);
 
 //                auto shape = GetShapeFromShapeProto(proto_shape);

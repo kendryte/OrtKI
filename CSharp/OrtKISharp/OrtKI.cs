@@ -134,4 +134,15 @@ public partial class OrtKI
         var _tensor = ortki_BatchNormalization(X.Handle, scale.Handle, B.Handle, input_mean.Handle, input_var.Handle, epsilon, momentum);
         return new Tensor(_tensor);
     }
+    
+    public static void LoadDLL()
+    {
+        var assembly = typeof(Tensor).Assembly;
+        var path = new DllImportSearchPath();
+        var ok = NativeLibrary.TryLoad("/home/homura/Code/OrtKI/cmake-build-debug/libortki.so", assembly, null, out var res1);
+        if (!ok)
+        {
+            throw new DllNotFoundException("libortki not found");
+        }
+    }
 }

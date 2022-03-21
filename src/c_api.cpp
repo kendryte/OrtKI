@@ -78,6 +78,11 @@ ortki::OrtKITensor *tensor_to_type(ortki::OrtKITensor *tensor, ortki::DataType d
     return ortki_Cast(tensor, dataType);
 }
 
+void tensor_reshape(ortki::OrtKITensor *tensor, int *shape, int size)
+{
+    tensor->reshape(std::vector<int64_t>(shape, shape + size));
+}
+
 void op_executor_dispose(ortki::OpExecutor* executor)
 {
     delete executor;

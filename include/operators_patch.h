@@ -9,5 +9,8 @@ ORTKI_API(ortki::OrtKITensor *) ortki_ResizeWithSizes(ortki::OrtKITensor * X, or
 
 ORTKI_API(ortki::OrtKITensor *) ortki_ResizeWithScales(ortki::OrtKITensor * X, ortki::OrtKITensor * roi, ortki::OrtKITensor * scales, const char* coordinate_transformation_mode, float cubic_coeff_a, int64_t exclude_outside, float extrapolation_value, const char* mode, const char* nearest_mode);
 
+// Upsample has been deprecated
+ORTKI_API(ortki::OrtKITensor *) ortki_Upsample(ortki::OrtKITensor * X, ortki::OrtKITensor * scales, const char* mode);
+
 // training mode set false and must spec only one output
 ORTKI_API(ortki::OrtKITensor *) ortki_BatchNormalization(ortki::OrtKITensor * X, ortki::OrtKITensor * scale, ortki::OrtKITensor * B, ortki::OrtKITensor * input_mean, ortki::OrtKITensor * input_var, float epsilon, float momentum);

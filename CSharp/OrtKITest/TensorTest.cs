@@ -63,7 +63,7 @@ public class TensorTest
     public void TestScalar()
     {
         var t = Tensor.FromScalar(1f);
-        var n = t + 1;
+        var n = t + 1f;
         Assert.Equal(1, t.Length);
         Assert.Equal(OrtDataType.Float, t.DataType);
     }
@@ -81,5 +81,18 @@ public class TensorTest
         var t1 = Tensor.MakeTensor(new long[] {1, 2, 3}); 
         var t2 = Tensor.MakeTensor(new long[] {1, 2, 3});
         Assert.Equal(t1, t2);
+    }
+
+    [Fact]
+    public void TestEmptyShape()
+    {
+        var t = Tensor.MakeTensor(new[] {2});
+        t.Reshape(Array.Empty<int>());
+        Assert.Equal(t.Shape, Array.Empty<int>());
+        
+        var t1 = Tensor.MakeTensor(new[] {1}, new int[] { });
+        var s = t1.Shape;
+        var n = t1 + t1;
+        Assert.Equal(n.Shape, Array.Empty<int>());
     }
 }

@@ -15,6 +15,7 @@ ORTKI_API(int) tensor_rank(ortki::OrtKITensor *tensor);
 ORTKI_API(void) tensor_shape(ortki::OrtKITensor *tensor, int *output);
 ORTKI_API(void*) tensor_buffer(ortki::OrtKITensor *tensor);
 ORTKI_API(ortki::OrtKITensor *) tensor_to_type(ortki::OrtKITensor *tensor, ortki::DataType dataType);
+ORTKI_API(void) tensor_reshape(ortki::OrtKITensor *tensor, int *shape, int size);
 
 ORTKI_API(int) tensor_seq_size(ortki::OrtKITensorSeq *);
 ORTKI_API(ortki::OrtKITensor *) tensor_seq_get_value(ortki::OrtKITensorSeq *, int index);

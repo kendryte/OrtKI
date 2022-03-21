@@ -42,14 +42,9 @@ public partial class Tensor : IDisposable, IEquatable<Tensor>
         (Handle, Mem) = MakeTensorHandle(data, dataType, shape);
     }
 
-    public Tensor(float x)
-    {
-        FromScalar(x);
-    }
-
     public static Tensor FromScalar<T>(T x) where T : unmanaged
     {
-        return MakeTensor(new[] {x});
+        return MakeTensor(new[] {x}, Array.Empty<int>());
     }
 
     internal Tensor(IntPtr handle, IntPtr mem)
@@ -150,6 +145,9 @@ public partial class Tensor : IDisposable, IEquatable<Tensor>
     [DllImport("ortki")]
     internal static extern IntPtr tensor_to_type(IntPtr tensor, OrtDataType dataType);
 
+    [DllImport("ortki")]
+    internal static extern void tensor_reshape(IntPtr tensor, int[] shape, int size);
+    
     public OrtDataType DataType => tensor_data_type(Handle);
 
     public int Rank => tensor_rank(Handle);
@@ -169,6 +167,11 @@ public partial class Tensor : IDisposable, IEquatable<Tensor>
         }
     }
 
+    public bool IsScalar()
+    {
+        return Shape.Length == 0;
+    }
+    
     public static Tensor MakeTensor<T>(ReadOnlySpan<T> buffer, int[] shape) 
         where T : unmanaged
     {
@@ -239,7 +242,16 @@ public partial class Tensor : IDisposable, IEquatable<Tensor>
 
     public Tensor ToType(OrtDataType dataType)
     {
+        if (DataType == dataType)
+        {
+            return this;
+        }
         return new Tensor(tensor_to_type(Handle, dataType));
+    }
+
+    public void Reshape(int[] shape)
+    {
+        tensor_reshape(Handle, shape, shape.Length);
     }
 
     public Tensor BroadcastTo(int[] shape)

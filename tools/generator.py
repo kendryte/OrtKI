@@ -367,7 +367,7 @@ def csharp_wrapper(schemas):
         s += "\n".join([CSharpWrapper(schema).make_impl() for schema in schemas])
         f.write(CSharpGenerator.gen_class_source("", s))
 
-blockOps = ['If', 'Loop', 'Scan', 'Constant', 'ConstantOfShape', 'Split', 'Resize', 'BatchNormalization']
+blockOps = ['If', 'Loop', 'Scan', 'Constant', 'ConstantOfShape', 'Split', 'Resize', 'BatchNormalization', 'Upsample']
 targets = [
     capi, 
     cshapr_dll_import, 

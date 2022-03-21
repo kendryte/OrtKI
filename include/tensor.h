@@ -48,6 +48,10 @@ namespace ortki {
             return GetShapeVector(_tensor->Shape());
         }
 
+        void reshape(const std::vector<int64_t> &new_shape) const {
+            _tensor->Reshape(onnxruntime::TensorShape(new_shape));
+        }
+
         size_t length() const {
             auto &&shape = _tensor->Shape().GetDims();
             return ComputeSize(shape);

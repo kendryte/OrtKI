@@ -64,10 +64,12 @@ void test_transpose()
 
 void test_split()
 {
-    auto input = make_tensor({1, 2, 3, 4, 5, 6, 7, 8}, {4, 2});
+    auto input = make_tensor({1, 2, 3, 4, 5, 6, 7, 8}, {2, 4});
     std::vector<int64_t> splits_v = {1, 3};
     auto splits = make_tensor(splits_v);
-    auto output = ortki_Split(input, splits, 0);
+    auto output = ortki_Split(input, splits, 1);
+    auto v1 = output->get_value(0)->to_vector<int>();;
+    auto v2 = output->get_value(1)->to_vector<int>();;
 //    auto is_seq = output[0]->_handler.IsTensorSequence();
     std::cout << "str" << std::endl;
 }
@@ -123,11 +125,11 @@ void test_squeeze()
 // todo:these add to test, to different type buffer
 int main()
 {
-     test_slice();
+//     test_slice();
 //    test_squeeze();
 //    test_argmin();
     // test_batchnorm();
-    // test_split();
+     test_split();
     // test_transpose();
 //    test_cast();
 //    test_resize();

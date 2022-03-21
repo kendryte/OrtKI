@@ -154,7 +154,6 @@ ORTKI_API(ortki::OrtKITensor *) ortki_Transpose(ortki::OrtKITensor * data, int64
 ORTKI_API(ortki::OrtKITensor *) ortki_Trilu(ortki::OrtKITensor * input, ortki::OrtKITensor * k, int64_t upper);
 ORTKI_API(ortki::OrtKITensorSeq *) ortki_Unique(ortki::OrtKITensor * X, int64_t axis, int64_t sorted);
 ORTKI_API(ortki::OrtKITensor *) ortki_Unsqueeze(ortki::OrtKITensor * data, ortki::OrtKITensor * axes);
-ORTKI_API(ortki::OrtKITensor *) ortki_Upsample(ortki::OrtKITensor * X, ortki::OrtKITensor * scales, const char* mode);
 ORTKI_API(ortki::OrtKITensor *) ortki_Where(ortki::OrtKITensor * condition, ortki::OrtKITensor * X, ortki::OrtKITensor * Y);
 ORTKI_API(ortki::OrtKITensor *) ortki_Xor(ortki::OrtKITensor * A, ortki::OrtKITensor * B);
 ORTKI_API(ortki::OrtKITensor *) ortki_ArrayFeatureExtractor(ortki::OrtKITensor * X, ortki::OrtKITensor * Y);

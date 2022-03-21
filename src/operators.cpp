@@ -1495,15 +1495,6 @@ Unsqueeze.AddInput("axes", axes);
 return new ortki::OrtKITensor(Unsqueeze.Run()[0]);
 }
 
-ORTKI_API(ortki::OrtKITensor *) ortki_Upsample(ortki::OrtKITensor * X, ortki::OrtKITensor * scales, const char* mode)
-{
-ortki::OpExecutor Upsample("Upsample");
-Upsample.AddInput("X", X);
-Upsample.AddInput("scales", scales);
-Upsample.AddAttribute("mode", mode);
-return new ortki::OrtKITensor(Upsample.Run()[0]);
-}
-
 ORTKI_API(ortki::OrtKITensor *) ortki_Where(ortki::OrtKITensor * condition, ortki::OrtKITensor * X, ortki::OrtKITensor * Y)
 {
 ortki::OpExecutor Where("Where");

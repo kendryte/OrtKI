@@ -1,12 +1,23 @@
 #include <operators_patch.h>
-
+#include <op_executor.h>
+template<typename T = int>
+ortki::OrtKITensor *make_tensor(const std::vector<T> &value, const std::vector<int64_t> &shape)
+{
+    auto *ptr = new T[value.size()];
+    for (int i = 0; i < value.size(); ++i) {
+        ptr[i] = value[i];
+    }
+    return new ortki::OrtKITensor((void *)ptr, ortki::TypeToDataType<T>(), shape);
+}
 ortki::OrtKITensorSeq *ortki_Split(ortki::OrtKITensor *input, ortki::OrtKITensor *split, int64_t axis) {
     ortki::OpExecutor Split("Split");
     Split.AddInput("input", input);
     Split.AddInput("split", split);
     Split.AddAttribute("axis", axis);
+
     Split.SetOutputSize(split->shape()[0]);
-    return new ortki::OrtKITensorSeq(Split.Run());
+    auto results = Split.Run();
+    return new ortki::OrtKITensorSeq(results);
 }
 
 ortki::OrtKITensor * ortki_ResizeWithSizes(ortki::OrtKITensor *X, ortki::OrtKITensor *roi, ortki::OrtKITensor *sizes,
@@ -56,4 +67,13 @@ ORTKI_API(ortki::OrtKITensor *) ortki_BatchNormalization(ortki::OrtKITensor * X,
     BatchNormalization.AddAttribute("momentum", momentum);
     BatchNormalization.SetOutputSize(1);
     return new ortki::OrtKITensor(BatchNormalization.Run()[0]);
+}
+
+ORTKI_API(ortki::OrtKITensor *) ortki_Upsample(ortki::OrtKITensor * X, ortki::OrtKITensor * scales, const char* mode)
+{
+    ortki::OpExecutor Upsample("Upsample", 9);
+    Upsample.AddInput("X", X);
+    Upsample.AddInput("scales", scales);
+    Upsample.AddAttribute("mode", mode);
+    return new ortki::OrtKITensor(Upsample.Run()[0]);
 }
