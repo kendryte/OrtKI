@@ -36,16 +36,6 @@ jobs:
         working-directory: ${{github.workspace}}/build
         run: cmake .. -G Ninja -DCMAKE_BUILD_TYPE=$BUILD_TYPE -Donnxruntime_BUILD_UNIT_TESTS=OFF -DBUILD_TEST_EXE=OFF
 
-#      - name: PrintCompile1
-#        shell: bash
-#        working-directory: ${{github.workspace}}/build
-#        run: cmd //c tree
-#
-#      - name: PrintCompile2
-#        shell: bash
-#        working-directory: ${{github.workspace}}/build
-#        run: cat compile_commands.json
-
       - name: Build
         shell: bash
         working-directory: ${{github.workspace}}/build
@@ -55,6 +45,16 @@ jobs:
         shell: bash
         working-directory: ${{github.workspace}}/build
         run: cmake --install . --prefix ../install
+
+      - name: Build Nuget Package
+        shell: bash
+        working-directory: ${{github.workspace}}/CSharp/libortki
+        run: nuget pack libortki-win.nuspec
+
+      - name: Push Package
+        shell: bash
+        working-directory: ${{github.workspace}}/CSharp/libortki
+        run: nuget push *.nupkg b4d8f00c-8912-4ba7-ad30-1d7d01c815ec -source https://www.myget.org/feed/Packages/magicallibs
 
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v2.2.2

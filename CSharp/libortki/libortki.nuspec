@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>libortki</id>
+    <version>0.0.1</version>
+    <title>libortki</title>
+    <authors>FusionBolt</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">Apache</license>
+    <description>ortki binary</description>
+  </metadata>
+
+  <files>
+    <file src="libortki.so" target="runtimes\linux-x64\native\lib" />
+    <file src="libortki.dylib" target="runtimes\osx-x64\native\lib" />
+    <file src="ortki.lib" target="runtimes\win-x64\native\lib" />
+  </files>
+</package>

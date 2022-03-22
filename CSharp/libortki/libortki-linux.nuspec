@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>libortki-linux</id>
+    <version>0.0.1</version>
+    <title>libortki-linux</title>
+    <authors>FusionBolt</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">Apache</license>
+    <description>ortki linux binary</description>
+  </metadata>
+  <files>
+    <file src="..\..\install\libortki.so" target="runtime\linux-x64\native"/>
+  </files>
+</package>

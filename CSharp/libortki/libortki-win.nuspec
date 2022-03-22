@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>libortki-win</id>
+    <version>0.0.1</version>
+    <title>libortki-win</title>
+    <authors>FusionBolt</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">Apache</license>
+    <description>ortki win binary</description>
+  </metadata>
+  <files>
+    <file src="..\..\install\libortki.so" target="runtime\win-x64\native"/>
+  </files>
+</package>
