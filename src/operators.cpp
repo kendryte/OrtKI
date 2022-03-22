@@ -560,28 +560,6 @@ LRN.AddAttribute("size", size);
 return new ortki::OrtKITensor(LRN.Run()[0]);
 }
 
-ORTKI_API(ortki::OrtKITensorSeq *) ortki_LSTM(ortki::OrtKITensor * X, ortki::OrtKITensor * W, ortki::OrtKITensor * R, ortki::OrtKITensor * B, ortki::OrtKITensor * sequence_lens, ortki::OrtKITensor * initial_h, ortki::OrtKITensor * initial_c, ortki::OrtKITensor * P, float* activation_alpha, int activation_alpha_size, float* activation_beta, int activation_beta_size, const char** activations, int activations_size, float clip, const char* direction, int64_t hidden_size, int64_t input_forget, int64_t layout)
-{
-ortki::OpExecutor LSTM("LSTM");
-LSTM.AddInput("X", X);
-LSTM.AddInput("W", W);
-LSTM.AddInput("R", R);
-LSTM.AddInput("B", B);
-LSTM.AddInput("sequence_lens", sequence_lens);
-LSTM.AddInput("initial_h", initial_h);
-LSTM.AddInput("initial_c", initial_c);
-LSTM.AddInput("P", P);
-LSTM.AddAttribute("activation_alpha", ortki::ToVector(activation_alpha, activation_alpha_size));
-LSTM.AddAttribute("activation_beta", ortki::ToVector(activation_beta, activation_beta_size));
-LSTM.AddAttribute("activations", ortki::ToVector<const char*, std::string>(activations, activations_size));
-LSTM.AddAttribute("clip", clip);
-LSTM.AddAttribute("direction", direction);
-LSTM.AddAttribute("hidden_size", hidden_size);
-LSTM.AddAttribute("input_forget", input_forget);
-LSTM.AddAttribute("layout", layout);
-return new ortki::OrtKITensorSeq(LSTM.Run());
-}
-
 ORTKI_API(ortki::OrtKITensor *) ortki_LeakyRelu(ortki::OrtKITensor * X, float alpha)
 {
 ortki::OpExecutor LeakyRelu("LeakyRelu");

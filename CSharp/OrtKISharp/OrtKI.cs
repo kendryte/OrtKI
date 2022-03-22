@@ -135,6 +135,15 @@ public partial class OrtKI
         return new Tensor(_tensor);
     }
     
+    [DllImport("ortki")]
+    private static extern IntPtr ortki_LSTM(IntPtr X, IntPtr W, IntPtr R, IntPtr B, IntPtr sequence_lens, IntPtr initial_h, IntPtr initial_c, IntPtr P, float[] activation_alpha, int activation_alpha_size, float[] activation_beta, int activation_beta_size, String[] activations, int activations_size, float clip, String direction, long hidden_size, long input_forget, long layout, bool has_clip, long output_size);
+    
+    public static Tensor[] LSTM(Tensor X, Tensor W, Tensor R, Tensor B, Tensor sequence_lens, Tensor initial_h, Tensor initial_c, Tensor P, float[] activation_alpha, float[] activation_beta, String[] activations, float clip, String direction, long hidden_size, long input_forget, long layout, bool has_clip, long output_size)
+    {
+        var _tensor = ortki_LSTM(X.Handle, W.Handle, R.Handle, B.Handle, sequence_lens.Handle, initial_h.Handle, initial_c.Handle, P.Handle, activation_alpha, activation_alpha.Length, activation_beta, activation_beta.Length, activations, activations.Length, clip, direction, hidden_size, input_forget, layout, has_clip, output_size);
+        return new TensorSeq(_tensor).ToTensorArray();
+    }
+    
     public static void LoadDLL()
     {
         var assembly = typeof(Tensor).Assembly;

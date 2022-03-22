@@ -94,12 +94,21 @@ public class KernelTest
     [Fact]
     public void TestSplit()
     {
-        // var input = Tensor.MakeTensor(Enumerable.Range(0, 4 * 8 * 8).ToArray(), new[] {4, 8, 8});
-        
         var input = Tensor.MakeTensor(Enumerable.Range(0, 8).ToArray(), new[] {4, 2});
         
         var axis = 0;
         var split = Tensor.MakeTensor(new long[] {1, 3});
         var result = OrtKI.Split(input, split, axis);
+        Assert.Equal(Tensor.MakeTensor(new[] {0, 1}, new[] {1, 2}), result[0]);
+        Assert.Equal(Tensor.MakeTensor(new[] {2, 3, 4, 5, 6, 7}, new[] {3, 2}), result[1]);
+    }
+
+    [Fact]
+    public void TestScalaBinary()
+    {
+        var a = Tensor.FromScalar(3L);
+        var b = Tensor.FromScalar(5L);
+        var c = a * b;
+        Assert.Equal(Tensor.FromScalar(15L), c);
     }
 }

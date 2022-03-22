@@ -346,6 +346,7 @@ namespace ortki {
 //        }
 
         if (!status.IsOK()) {
+            ORT_THROW("ExecuteModel Status is Failed" + status.ErrorMessage());
             return {};
         }
 
@@ -505,6 +506,8 @@ namespace ortki {
         }
 
 
+        DEBUG("current op")
+        DEBUG(op_)
         InitOutput();
         auto schema_registry = ONNX_NAMESPACE::OpSchemaRegistry::Instance();
         auto schema = schema_registry->GetSchema(op_, 15);
@@ -736,7 +739,7 @@ namespace ortki {
         if (output_size_ != INT32_MAX) {
             out_size = output_size_;
         }
-        // used for split
+        // used for split and lstm
         if (out_size == INT32_MAX) {
             if (output_size_ == 0) {
                 throw std::runtime_error("output size should not be zero, in op" + schema->Name());
@@ -756,7 +759,7 @@ namespace ortki {
 
     void OpExecutor::AllocOutput(Graph &graph) {
         for (int i = 0; i < output_data_.size(); ++i) {
-            auto out_info = graph.GetOutputs()[0];
+            auto out_info = graph.GetOutputs()[i];
             auto proto_shape = out_info->Shape();
             output_data_[i].def_ = NodeArg(out_info->Name(), out_info->TypeAsProto());
             DEBUG("Alloc Output")

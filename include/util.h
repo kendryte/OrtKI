@@ -24,7 +24,7 @@ namespace ortki {
     inline std::vector<std::string> ToVector(const char** v, int size) {
         std::vector<std::string> vec;
         for (int i = 0; i < size; ++i) {
-            vec[i] = v[i];
+            vec.emplace_back(v[i]);
         }
         return vec;
     }

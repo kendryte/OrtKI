@@ -60,7 +60,6 @@ ORTKI_API(ortki::OrtKITensor *) ortki_InstanceNormalization(ortki::OrtKITensor *
 ORTKI_API(ortki::OrtKITensor *) ortki_IsInf(ortki::OrtKITensor * X, int64_t detect_negative, int64_t detect_positive);
 ORTKI_API(ortki::OrtKITensor *) ortki_IsNaN(ortki::OrtKITensor * X);
 ORTKI_API(ortki::OrtKITensor *) ortki_LRN(ortki::OrtKITensor * X, float alpha, float beta, float bias, int64_t size);
-ORTKI_API(ortki::OrtKITensorSeq *) ortki_LSTM(ortki::OrtKITensor * X, ortki::OrtKITensor * W, ortki::OrtKITensor * R, ortki::OrtKITensor * B, ortki::OrtKITensor * sequence_lens, ortki::OrtKITensor * initial_h, ortki::OrtKITensor * initial_c, ortki::OrtKITensor * P, float* activation_alpha, int activation_alpha_size, float* activation_beta, int activation_beta_size, const char** activations, int activations_size, float clip, const char* direction, int64_t hidden_size, int64_t input_forget, int64_t layout);
 ORTKI_API(ortki::OrtKITensor *) ortki_LeakyRelu(ortki::OrtKITensor * X, float alpha);
 ORTKI_API(ortki::OrtKITensor *) ortki_Less(ortki::OrtKITensor * A, ortki::OrtKITensor * B);
 ORTKI_API(ortki::OrtKITensor *) ortki_LessOrEqual(ortki::OrtKITensor * A, ortki::OrtKITensor * B);
