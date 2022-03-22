@@ -10,6 +10,6 @@
     <description>ortki win binary</description>
   </metadata>
   <files>
-    <file src="..\..\install\libortki.so" target="runtime\win-x64\native"/>
+    <file src="..\..\install\lib\ortki.lib" target="runtime\win-x64\native"/>
   </files>
 </package>
