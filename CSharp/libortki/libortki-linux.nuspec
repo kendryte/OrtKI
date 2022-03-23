@@ -10,6 +10,7 @@
     <description>ortki linux binary</description>
   </metadata>
   <files>
-    <file src="..\..\install\lib\libortki.so" target="runtime\linux-x64\native"/>
+    <file src="..\..\install\lib\libortki.so" target="runtimes\linux-x64\native"/>
+    <file src="_._" target="lib\netstandard2.0" />
   </files>
 </package>

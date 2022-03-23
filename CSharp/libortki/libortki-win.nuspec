@@ -10,6 +10,7 @@
     <description>ortki win binary</description>
   </metadata>
   <files>
-    <file src="..\..\install\lib\ortki.lib" target="runtime\win-x64\native"/>
+    <file src="..\..\install\lib\ortki.lib" target="runtimes\win-x64\native"/>
+    <file src="_._" target="lib\netstandard2.0" />
   </files>
 </package>

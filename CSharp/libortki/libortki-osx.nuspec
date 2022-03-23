@@ -10,6 +10,7 @@
     <description>ortki mac binary</description>
   </metadata>
   <files>
-    <file src="..\..\install\lib\libortki.so" target="runtime\osx-x64\native"/>
+    <file src="..\..\install\lib\libortki.dylib" target="runtimes\osx-x64\native"/>
+    <file src="_._" target="lib\netstandard2.0" />
   </files>
 </package>

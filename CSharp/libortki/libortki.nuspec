@@ -8,11 +8,17 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type="expression">Apache</license>
     <description>ortki binary</description>
+    <dependencies>
+      <group targetFramework="netstandard2.0">
+        <dependency id="libortki-win" version="0.0.1" include="native" />
+        <dependency id="libortki-osx" version="0.0.1" include="native" />
+        <dependency id="libortki-linux" version="0.0.1" include="native" />
+      </group>
+    </dependencies>
   </metadata>
 
   <files>
-    <file src="libortki.so" target="runtimes\linux-x64\native\lib" />
-    <file src="libortki.dylib" target="runtimes\osx-x64\native\lib" />
-    <file src="ortki.lib" target="runtimes\win-x64\native\lib" />
+    <!-- A dummy reference which prevents NuGet from adding any compilation references when this package is imported -->
+    <file src="_._" target="lib\netstandard2.0" />
   </files>
 </package>
