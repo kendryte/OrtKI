@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace OrtKISharp;
 
@@ -144,11 +145,26 @@ public partial class OrtKI
         return new TensorSeq(_tensor).ToTensorArray();
     }
     
+    static string nativeRid =>
+        RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "win-x64" :
+        RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "linux-x64" :
+        RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? 
+            RuntimeInformation.ProcessArchitecture == Architecture.X64
+                ?"osx-x64" : "osx-arm64" :
+        "any";
+
+    static string nativeLib =>
+        RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "ortki.dll" :
+        RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "libortki.dylib" :
+        "libortki.so";
+    
     public static void LoadDLL()
     {
         var assembly = typeof(Tensor).Assembly;
-        var path = new DllImportSearchPath();
-        var ok = NativeLibrary.TryLoad("/home/homura/Code/OrtKI/cmake-build-debug/libortki.so", assembly, null, out var res1);
+        var assemblyFolder = Path.GetDirectoryName(assembly.Location);
+        var dll = Path.Join(assemblyFolder, "runtimes", nativeRid, "native", nativeLib);
+        Console.WriteLine(dll);
+        var ok = NativeLibrary.TryLoad(dll, assembly, null, out var res1);
         if (!ok)
         {
             throw new DllNotFoundException("libortki not found");

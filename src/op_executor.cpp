@@ -12,7 +12,11 @@ namespace ortki {
 #define ASSERT_TRUE(a) \
     std::cout
 
+#ifndef NDEBUG
 #define DEBUG(s) std::cout << s << std::endl;
+#else
+#define DEBUG(s) ;
+#endif
 
 #define CHECK_STATUS_OK(function)                  \
   do {                                              \
@@ -511,7 +515,7 @@ namespace ortki {
         InitOutput();
         auto schema_registry = ONNX_NAMESPACE::OpSchemaRegistry::Instance();
         auto schema = schema_registry->GetSchema(op_, 15);
-        DEBUG("init output")
+//        DEBUG("init output")
         fetches_.clear();
         bool cache_enabled = cached_model_ != nullptr;
         auto p_model = !cache_enabled ? BuildGraph({}, allow_released_onnx_opset_only) : cached_model_;
@@ -520,11 +524,11 @@ namespace ortki {
         std::vector<std::string> output_names;
 
         for (auto &output: output_data_) {
-            DEBUG(output.def_.Name());
+//            DEBUG(output.def_.Name());
             output_names.push_back(output.def_.Name());
         }
 
-        DEBUG("Graph resolve")
+//        DEBUG("Graph resolve")
         GraphResolve(graph, options, cache_enabled);
 
         AllocOutput(graph);
@@ -751,9 +755,9 @@ namespace ortki {
             auto mltype = DataTypeImpl::GetType<float>();
             auto name = "output" + std::to_string(i);
             output_data_.emplace_back(NodeArg(name, mltype->GetTypeProto()), OrtValue());
-            DEBUG("Init Output")
-            DEBUG(name)
-            DEBUG(output_data_[i].def_.Name())
+//            DEBUG("Init Output")
+//            DEBUG(name)
+//            DEBUG(output_data_[i].def_.Name())
         }
     }
 
@@ -762,9 +766,9 @@ namespace ortki {
             auto out_info = graph.GetOutputs()[i];
             auto proto_shape = out_info->Shape();
             output_data_[i].def_ = NodeArg(out_info->Name(), out_info->TypeAsProto());
-            DEBUG("Alloc Output")
-            DEBUG(out_info->Name())
-            DEBUG(output_data_[i].def_.Name())
+//            DEBUG("Alloc Output")
+//            DEBUG(out_info->Name())
+//            DEBUG(output_data_[i].def_.Name())
             // output_data_[i].def_.SetShape(*proto_shape);
 
 //                auto shape = GetShapeFromShapeProto(proto_shape);
