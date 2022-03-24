@@ -454,7 +454,7 @@ namespace ortki {
     std::vector<OrtValue> OpExecutor::Run(
             const std::unordered_set<std::string> &excluded_provider_types,
             const RunOptions *run_options,
-            std::vector<std::unique_ptr<IExecutionProvider>> *execution_providers,
+            std::vector<std::unique_ptr<IExecutionProvider>> *_,
             ExecutionMode execution_mode) {
         SessionOptions so;
         so.use_per_session_threads = false;
@@ -465,8 +465,10 @@ namespace ortki {
         so.graph_optimization_level = TransformerLevel::Level1;  // 'Default' == off
         Graph::ResolveOptions options = {};
         options.override_types = true;
+        std::vector<std::unique_ptr<IExecutionProvider>> execution_providers;
+        execution_providers.emplace_back(std::move(DefaultCpuExecutionProvider()));
         return Run(so, excluded_provider_types,
-                   run_options, execution_providers, options);
+                   run_options, &execution_providers, options);
     }
 
     std::vector<OrtValue> OpExecutor::Run(
@@ -716,6 +718,7 @@ namespace ortki {
             }
 
             if (!has_run) {
+
                 throw std::runtime_error("No registered execution providers were able to run. op:" +
                                          schema->Name() +
                                          ", maybe onnxruntime don't support this op in current providers");
