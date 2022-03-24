@@ -334,21 +334,6 @@ namespace ortki {
 
         status = session_object.Initialize();
 
-//        if (!status.IsOK()) {
-//            if (expect_result == ExpectResult::kExpectFailure) {
-//                EXPECT_TRUE(!status.IsOK());
-//                // Disable expected_failure_string checks for OpenVINO EP
-//                if (provider_type != kOpenVINOExecutionProvider) {
-//                    EXPECT_THAT(status.ErrorMessage(),
-//                                testing::HasSubstr(expected_failure_string));
-//                }
-//            } else {
-//                LOGS_DEFAULT(ERROR) << "Initialize failed with status: "
-//                                    << status.ErrorMessage();
-//                EXPECT_TRUE(status.IsOK()) << status.ErrorMessage();
-//            }
-//        }
-
         if (!status.IsOK()) {
             ORT_THROW("ExecuteModel Status is Failed" + status.ErrorMessage());
             return {};
@@ -365,94 +350,12 @@ namespace ortki {
                 session_object.Run(run_options ? *run_options : default_run_options,
                                    feeds, output_names, &fetches);
 
-//            if (status.IsOK()) {
-//                return fetches;
-////                if (expect_result == ExpectResult::kExpectFailure) {
-////                    return {};
-////                }
-//            } else {
-////                if (expect_result == ExpectResult::kExpectFailure) {
-////                    // Disable expected_failure_string checks for MKL-DNN and OpenVINO EP's
-////                    if (provider_type != kDnnlExecutionProvider &&
-////                        provider_type != kOpenVINOExecutionProvider) {
-////                        EXPECT_THAT(status.ErrorMessage(),
-////                                    testing::HasSubstr(expected_failure_string));
-////                    }
-////                } else {
-////                    LOGS_DEFAULT(ERROR) << "Run failed with status: "
-////                                        << status.ErrorMessage();
-////                    EXPECT_TRUE(status.IsOK()) << status.ErrorMessage();
-////                }
-//                return {};
-//            }
-//        }
 
-        // Verify the outputs
-        // Todo: support check output with map/sequence/....
-//        if (verify_output_) {
-//            if (custom_output_verifier_) {
-//                // do custom verification if provided
-//                custom_output_verifier_(fetches, provider_type);
-//            } else {
-//                // default verification
-//                size_t idx = 0;
-//                for (auto &expected_data: output_data_) {
-//                    OrtValue &ort_value = fetches[idx];
-//                    if (ort_value.Fence())
-//                        ort_value.Fence()->BeforeUsingAsInput(
-//                                onnxruntime::kCpuExecutionProvider, 0);
-//
-//                    if (expected_data.def_.Exists()) {           // optional edges won't exist (so skip them)
-//                        if (!expected_data.data_.IsAllocated()) {  // optional type output (None)
-//                            EXPECT_TRUE(!ort_value.IsAllocated())
-//                                    << "Expected to see an output of None "
-//                                    << "but instead got an output that wasn't None";
-//
-//                            // Make sure types align
-//                            EXPECT_EQ(expected_data.data_.Type(), ort_value.Type())
-//                                    << "Expected optional type: " << expected_data.data_.Type()
-//                                    << " but instead got optional type: " << ort_value.Type();
-//                        } else if (expected_data.data_.IsTensor()) {
-//                            // verify output shape inference when input defs have shape
-//                            if (add_shape_to_tensor_data_) {
-//                                auto out_shape_proto = expected_data.def_.Shape();
-//                                EXPECT_TRUE(out_shape_proto != nullptr);
-//                                const auto &tensor_shape =
-//                                        utils::GetTensorShapeFromTensorShapeProto(*out_shape_proto);
-//                                const auto &inferred_dims = tensor_shape.GetDims();
-//                                const auto &expected_shape =
-//                                        expected_data.data_.Get<Tensor>().Shape();
-//                                EXPECT_TRUE(inferred_dims.size() ==
-//                                            expected_shape.NumDimensions());
-//                                for (size_t d = 0; d < inferred_dims.size(); ++d) {
-//                                    // check equal unless the input involved a symbolic dimension
-//                                    if (inferred_dims[d] != -1) {
-//                                        EXPECT_EQ(expected_shape[d], inferred_dims[d])
-//                                                << "Output idx = " << idx << " dim = " << d;
-//                                    }
-//                                }
-//                            }
-//
-//                            Check(expected_data, ort_value.Get<Tensor>(), provider_type);
-//                        } else {
-//                            Check(expected_data, ort_value, provider_type);
-//                        }
-//
-//                        ++idx;
-//
-//                        // skip missing trailing optional outputs
-//                        if (idx == fetches.size())
-//                            break;
-//                    }
-//                }
-//            }
-//        }
         DEBUG(fetches.size())
         return fetches;
     }
 
     std::vector<OrtValue> OpExecutor::Run(
-            const std::unordered_set<std::string> &excluded_provider_types,
             const RunOptions *run_options,
             std::vector<std::unique_ptr<IExecutionProvider>> *_,
             ExecutionMode execution_mode) {
@@ -467,49 +370,27 @@ namespace ortki {
         options.override_types = true;
         std::vector<std::unique_ptr<IExecutionProvider>> execution_providers;
         execution_providers.emplace_back(std::move(DefaultCpuExecutionProvider()));
-        return Run(so, excluded_provider_types,
+        return Run(so,
                    run_options, &execution_providers, options);
     }
 
     std::vector<OrtValue> OpExecutor::Run(
             SessionOptions so,  // Take the SessionOptions by value (i.e. make a copy)
             // because we may need to modify it
-            const std::unordered_set<std::string> &excluded_provider_types,
             const RunOptions *run_options,
             std::vector<std::unique_ptr<IExecutionProvider>> *execution_providers,
             const Graph::ResolveOptions &options,
             /*out*/ size_t *number_of_pre_packed_weights_counter,
             /*out*/ size_t *number_of_shared_pre_packed_weights_counter) {
-        std::string cur_provider = "not set";
         // try
 //        {
 #ifndef NDEBUG
         run_called_ = true;
 #endif
 
-
-        // IsAllowReleasedONNXOpsetsOnlySet() checks for the appropriate env var in the process (i.e.) process-wide
-        // `IsAllowReleasedONNXOpsetsOnlySetForThisTest()` is for this specific OpExecutor instance
-        // We will only support released opsets iff IsAllowReleasedONNXOpsetsOnlySet() and `IsAllowReleasedONNXOpsetsOnlySetForThisTest()`
-        // are both true
         auto allow_released_onnx_opset_only =
                 IsAllowReleasedONNXOpsetsOnlySetForThisTest() &&
                 model_load_utils::IsAllowReleasedONNXOpsetsOnlySet();
-//
-//        if (allow_released_onnx_opset_only) {
-//            auto &onnx_released_versions =
-//                    ONNX_NAMESPACE::OpSchemaRegistry::DomainToVersionRange::Instance().LastReleaseVersionMap();
-//            auto it = onnx_released_versions.find(domain_);
-//            if (it != onnx_released_versions.end() && opset_version_ > it->second) {
-//                LOGS_DEFAULT(WARNING)
-//                    << "Encountered model with opset version greater than released onnx opset version. "
-//                    << "Skipping this test. To run this test set environment variable ALLOW_RELEASED_ONNX_OPSET_ONLY to \"0\". "
-//                    << "Opset version of current model is " << opset_version_
-//                    << ", the latest released onnx opset version is " << it->second << ".";
-//                // GTEST_SKIP();
-//                throw std::runtime_error("opset version error");
-//            }
-//        }
 
 
         DEBUG("current op")
@@ -526,11 +407,9 @@ namespace ortki {
         std::vector<std::string> output_names;
 
         for (auto &output: output_data_) {
-//            DEBUG(output.def_.Name());
             output_names.push_back(output.def_.Name());
         }
 
-//        DEBUG("Graph resolve")
         GraphResolve(graph, options, cache_enabled);
 
         AllocOutput(graph);
@@ -538,32 +417,7 @@ namespace ortki {
         // Hookup the inputs and outputs
         std::unordered_map<std::string, OrtValue> feeds;
         FillFeedsAndOutputNames(feeds, output_names);
-        // Run the model
-//        static const std::string all_provider_types[] = {
-//                kCpuExecutionProvider,
-////                    kCudaExecutionProvider,
-////                    kDnnlExecutionProvider,
-////                    kNupharExecutionProvider,
-////                    kTensorrtExecutionProvider,
-////                    kOpenVINOExecutionProvider,
-////                    kDmlExecutionProvider,
-////                    kAclExecutionProvider,
-////                    kArmNNExecutionProvider,
-////                    kNnapiExecutionProvider,
-////                    kRocmExecutionProvider,
-////                    kCoreMLExecutionProvider,
-//        };
 
-//        bool has_run = false;
-
-//        if (execution_providers) {
-//            for (auto &entry: *execution_providers) {
-//                if (entry->Type() == kDmlExecutionProvider) {
-//                    so.enable_mem_pattern = false;
-//                    so.execution_mode = ExecutionMode::ORT_SEQUENTIAL;
-//                    break;
-//                }
-//            }
 
             InferenceSession session_object{so, GetEnvironment()};
 
@@ -583,7 +437,6 @@ namespace ortki {
                 CHECK_STATUS_OK(session_object.RegisterExecutionProvider(std::move(entry)));
             }
 
-//                std::cout << "Execute" << std::endl;
             fetches_ = ExecuteModel<InferenceSession>(
                     *p_model, session_object,
                     run_options, feeds, output_names, kCpuExecutionProvider, allow_released_onnx_opset_only);
@@ -602,139 +455,6 @@ namespace ortki {
                 *number_of_shared_pre_packed_weights_counter =
                         session_object.GetSessionState().GetUsedSharedPrePackedWeightCounter();
             }
-//
-//        } else {
-//            for (const std::string &provider_type: all_provider_types) {
-//                if (excluded_provider_types.count(provider_type) > 0)
-//                    continue;
-//
-//                cur_provider = provider_type;
-//
-//                if (provider_type == kDmlExecutionProvider) {
-//                    so.enable_mem_pattern = false;
-//                    so.execution_mode = ExecutionMode::ORT_SEQUENTIAL;
-//                }
-//                InferenceSession session_object{so, GetEnvironment()};
-//
-//                if (add_prepacked_shared_container_to_sessions_) {
-//                    CHECK_STATUS_OK(session_object.AddPrePackedWeightsContainer(&prepacked_weights_container_));
-//                }
-//
-//                for (auto &custom_session_registry: custom_session_registries_)
-//                    CHECK_PROVIDER_STATUS_OK(session_object.RegisterCustomRegistry(custom_session_registry));
-//
-//                std::unique_ptr<IExecutionProvider> execution_provider = DefaultCpuExecutionProvider();
-////                    if (provider_type == onnxruntime::kCpuExecutionProvider)
-////                        execution_provider = DefaultCpuExecutionProvider();
-////                    else if (provider_type == onnxruntime::kCudaExecutionProvider)
-////                        execution_provider = DefaultCudaExecutionProvider();
-////                    else if (provider_type == onnxruntime::kDnnlExecutionProvider)
-////                        execution_provider = DefaultDnnlExecutionProvider();
-////                    else if (provider_type == onnxruntime::kOpenVINOExecutionProvider)
-////                        execution_provider = DefaultOpenVINOExecutionProvider();
-////                    else if (provider_type == onnxruntime::kNupharExecutionProvider)
-////                        execution_provider = DefaultNupharExecutionProvider();
-////                    else if (provider_type == onnxruntime::kTensorrtExecutionProvider)
-////                        execution_provider = DefaultTensorrtExecutionProvider();
-////                    else if (provider_type == onnxruntime::kNnapiExecutionProvider)
-////                        execution_provider = DefaultNnapiExecutionProvider();
-////                    else if (provider_type == onnxruntime::kRknpuExecutionProvider)
-////                        execution_provider = DefaultRknpuExecutionProvider();
-////                    else if (provider_type == onnxruntime::kAclExecutionProvider)
-////                        execution_provider = DefaultAclExecutionProvider();
-////                    else if (provider_type == onnxruntime::kArmNNExecutionProvider)
-////                        execution_provider = DefaultArmNNExecutionProvider();
-////                    else if (provider_type == onnxruntime::kRocmExecutionProvider)
-////                        execution_provider = DefaultRocmExecutionProvider();
-////                    else if (provider_type == onnxruntime::kCoreMLExecutionProvider)
-////                        execution_provider = DefaultCoreMLExecutionProvider();
-////                    // skip if execution provider is disabled
-////                    if (execution_provider == nullptr)
-////                        continue;
-//
-//                bool valid = true;
-//
-//                // set execution provider for all nodes in the graph
-//                for (auto &node: graph.Nodes()) {
-//                    if (node.OpType() == kConstant)
-//                        continue;
-//
-//                    // if node is not registered for the provider, skip
-//                    node.SetExecutionProviderType(provider_type);
-////                        if (provider_type == onnxruntime::kOpenVINOExecutionProvider ||
-////                            provider_type == onnxruntime::kTensorrtExecutionProvider ||
-////                            provider_type == onnxruntime::kNupharExecutionProvider ||
-////                            // provider_type == onnxruntime::kStvmExecutionProvider ||
-////                            provider_type == onnxruntime::kNnapiExecutionProvider ||
-////                            provider_type == onnxruntime::kCoreMLExecutionProvider ||
-////                            provider_type == onnxruntime::kDnnlExecutionProvider)
-////                            continue;
-//                    auto reg = execution_provider->GetKernelRegistry();
-//                    if (!KernelRegistry::HasImplementationOf(*reg, node, execution_provider->Type())) {
-//                        valid = false;
-//                        for (auto &custom_session_registry: custom_session_registries_) {
-//                            if (KernelRegistry::HasImplementationOf(*custom_session_registry->GetKernelRegistry(),
-//                                                                    node, execution_provider->Type())) {
-//                                valid = true;
-//                                break;
-//                            }
-//                        }
-//
-//                        if (!valid) {
-//                            break;
-//                        }
-//                    }
-//                }
-//
-//                if (!valid)
-//                    continue;
-//
-//                for (auto &custom_session_registry: custom_session_registries_)
-//                    CHECK_PROVIDER_STATUS_OK(session_object.RegisterCustomRegistry(custom_session_registry));
-//
-//                has_run = true;
-//
-//                CHECK_PROVIDER_STATUS_OK(session_object.RegisterExecutionProvider(std::move(execution_provider)));
-//                fetches_ = ExecuteModel<InferenceSession>(
-//                        *p_model, session_object,
-//                        run_options, feeds, output_names, provider_type, allow_released_onnx_opset_only);
-////                    std::cout << "Execute" << std::endl;
-//                // After the model has initialized (happens in ExecuteModel),
-//                // we should be able to tell how many constant initializers were pre-packed
-//                // and out of these pre-packed ones how many of them used a "cached" version
-//                // from the shared container.
-//                // Populate these value if the user has requested this information.
-//                if (number_of_pre_packed_weights_counter) {
-//                    *number_of_pre_packed_weights_counter =
-//                            session_object.GetSessionState().GetNumberOfPrepacksCounter();
-//                }
-//
-//                if (number_of_shared_pre_packed_weights_counter) {
-//                    *number_of_shared_pre_packed_weights_counter =
-//                            session_object.GetSessionState().GetUsedSharedPrePackedWeightCounter();
-//                }
-//
-//                cur_provider = "not set";
-//            }
-//
-//            if (!has_run) {
-//
-//                throw std::runtime_error("No registered execution providers were able to run. op:" +
-//                                         schema->Name() +
-//                                         ", maybe onnxruntime don't support this op in current providers");
-//            }
-////                EXPECT_TRUE(has_run)
-////                        << "No registered execution providers were able to run.";
-//        }
-        // p_model->MainGraph().GetOutputs()
-//        }
-//        ORT_CATCH(const std::exception &ex) {
-//            ORT_HANDLE_EXCEPTION([&]() {
-//                std::cerr << ex.what() << "\nProvider:" << cur_provider << "\n";
-//            });
-//            // rethrow as some tests for error handling expect this
-//            ORT_RETHROW;
-//        }
         return fetches_;
     }
 
@@ -758,9 +478,6 @@ namespace ortki {
             auto mltype = DataTypeImpl::GetType<float>();
             auto name = "output" + std::to_string(i);
             output_data_.emplace_back(NodeArg(name, mltype->GetTypeProto()), OrtValue());
-//            DEBUG("Init Output")
-//            DEBUG(name)
-//            DEBUG(output_data_[i].def_.Name())
         }
     }
 
@@ -769,80 +486,6 @@ namespace ortki {
             auto out_info = graph.GetOutputs()[i];
             auto proto_shape = out_info->Shape();
             output_data_[i].def_ = NodeArg(out_info->Name(), out_info->TypeAsProto());
-//            DEBUG("Alloc Output")
-//            DEBUG(out_info->Name())
-//            DEBUG(output_data_[i].def_.Name())
-            // output_data_[i].def_.SetShape(*proto_shape);
-
-//                auto shape = GetShapeFromShapeProto(proto_shape);
-//                auto *buffer = new int[shape.Size()];
-//                auto *tensor = new onnxruntime::Tensor(GetDataType(out_info->TypeAsProto()), shape,
-//                                                      reinterpret_cast<void*>(buffer), OrtMemoryInfo());
-//                output_data_[i].data_.Init(tensor, onnxruntime::DataTypeImpl::GetType<onnxruntime::Tensor>(), [](auto&&){});
         }
     }
-
-//    void OpExecutor::AddReferenceOutputs(const std::string &model_path) {
-//        SessionOptions so;
-//        so.session_logid = op_;
-//        so.session_log_verbosity_level = 1;
-//        so.graph_optimization_level = TransformerLevel::Default;
-//
-//        RunOptions run_options;
-//        run_options.run_tag = op_;
-//        run_options.run_log_verbosity_level = 1;
-//
-//        Status status;
-//        InferenceSession subgraph_session_object{so, GetEnvironment()};
-//        ASSERT_TRUE((status = subgraph_session_object.Load(model_path)).IsOK()) << status;
-//        ASSERT_TRUE((status = subgraph_session_object.Initialize()).IsOK()) << status;
-//
-//        // Retrieve output names
-//        auto model_outputs = subgraph_session_object.GetModelOutputs();
-//        ASSERT_TRUE(model_outputs.first.IsOK());
-//        std::vector<std::string> output_names;
-//        std::transform(model_outputs.second->begin(),
-//                       model_outputs.second->end(),
-//                       std::back_inserter(output_names),
-//                       [](const onnxruntime::NodeArg *node_arg) -> std::string { return node_arg->Name(); });
-//
-//        NameMLValMap feeds;
-//        for (size_t i = 0; i < input_data_.size(); ++i) {
-//            if (input_data_[i].def_.Exists()) {
-//                feeds[input_data_[i].def_.Name()] = input_data_[i].data_;
-//            }
-//        }
-//
-//        std::vector<OrtValue> subgraph_fetches;
-//        ASSERT_TRUE((status = subgraph_session_object.Run(run_options, feeds, output_names, &subgraph_fetches)).IsOK())
-//                << status;
-//
-//        for (size_t out_idx = 0; out_idx < subgraph_fetches.size(); out_idx++) {
-//            // Retrieve TypeProto
-//            ASSERT_TRUE(subgraph_fetches[out_idx].Type()->IsTensorType()) << status;
-//            const Tensor &t = subgraph_fetches[out_idx].Get<Tensor>();
-//            const TensorTypeBase *tensor_type = DataTypeImpl::TensorTypeFromONNXEnum(t.GetElementType());
-//
-//            // Construct a temp TypeProto with shape information
-//            ONNX_NAMESPACE::TypeProto tmp_type_proto(*(tensor_type->GetTypeProto()));
-//            auto mutable_shape = tmp_type_proto.mutable_tensor_type()->mutable_shape();
-//            for (auto i: t.Shape().GetDims()) {
-//                auto *mutable_dim = mutable_shape->add_dim();
-//                mutable_dim->set_dim_value(i);
-//            }
-//
-//            output_data_.push_back(Data(NodeArg(output_names[out_idx], &tmp_type_proto),
-//                                        std::move(subgraph_fetches[out_idx])));
-//        }
-//    }
-
-//#ifdef ENABLE_TRAINING
-//    template std::vector<OrtValue> OpExecutor::ExecuteModel<training::TrainingSession>(
-//        Model& model, training::TrainingSession& session_object,
-//        ExpectResult expect_result, const std::string& expected_failure_string,
-//        const RunOptions* run_options,
-//        const std::unordered_map<std::string, OrtValue>& feeds,
-//        const std::vector<std::string>& output_names, const std::string& provider_type,
-//        bool allow_released_onnx_opset_only);
-//#endif
 }
