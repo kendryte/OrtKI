@@ -11,8 +11,4 @@ namespace ortki {
 Static logging manager with a CLog based sink so logging macros that use the default logger will work
 */
     ::onnxruntime::logging::LoggingManager &DefaultLoggingManager();
-
-    void reset_env();
-
-    void init_env();
 }

@@ -7,11 +7,6 @@
 #include <algorithm>
 
 namespace ortki {
-#define EXPECT_TRUE(a) \
-    std::cout
-#define ASSERT_TRUE(a) \
-    std::cout
-
 #ifndef NDEBUG
 #define DEBUG(s) std::cout << s << std::endl;
 #else
@@ -20,8 +15,11 @@ namespace ortki {
 
 #define CHECK_STATUS_OK(function)                  \
   do {                                              \
-    Status _tmp_status = (function);                \
-    ASSERT_TRUE(_tmp_status.IsOK()) << _tmp_status; \
+    Status _tmp_status = (function);               \
+    if(!_tmp_status.IsOK())                        \
+    {                                              \
+     ORT_THROW(_tmp_status);\
+    }\
   } while (false)
 
 #define CHECK_PROVIDER_STATUS_OK(function)                                                         \
@@ -321,14 +319,14 @@ namespace ortki {
         std::string s1;
         const bool rc = model.ToProto().SerializeToString(&s1);
         if (!rc) {
-            LOGS_DEFAULT(ERROR) << "Failed to serialize proto to string";
+            ORT_THROW("Failed to serialize proto to string");
             return {};
         }
         std::stringstream sstr(s1);
         auto status = session_object.Load(sstr, allow_released_onnx_opset_only);
         // EXPECT_TRUE(status.IsOK()) << status.ErrorMessage();
         if (!status.IsOK()) {
-            LOGS_DEFAULT(ERROR) << "Load failed with status: " << status.ErrorMessage();
+            ORT_THROW(std::string("Load failed with status: ") + status.ErrorMessage());
             return {};
         }
 
@@ -344,14 +342,11 @@ namespace ortki {
         default_run_options.run_log_verbosity_level = 1;
 
         std::vector<OrtValue> fetches;
-//        for (int i = 0; i < num_run_calls_; ++i) {
-        fetches.clear();
         status =
                 session_object.Run(run_options ? *run_options : default_run_options,
                                    feeds, output_names, &fetches);
 
 
-        DEBUG(fetches.size())
         return fetches;
     }
 
@@ -440,7 +435,6 @@ namespace ortki {
             fetches_ = ExecuteModel<InferenceSession>(
                     *p_model, session_object,
                     run_options, feeds, output_names, kCpuExecutionProvider, allow_released_onnx_opset_only);
-
             // After the model has initialized (happens in ExecuteModel),
             // we should be able to tell how many constant initializers were pre-packed
             // and out of these pre-packed ones how many of them used a "cached" version

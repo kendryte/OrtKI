@@ -249,13 +249,8 @@ namespace ortki {
                                 ONNX_NAMESPACE::ONNX_DOMAIN).second;
                 opset_version_ = latest_onnx_version;
             }
-            init_env();
         }
 
-        ~OpExecutor()
-        {
-            reset_env();
-        }
         // Set whether the NodeArg created by AddInput/AddOutput should include shape information
         // for Tensor types. If not added, shape inferencing should resolve. If added, shape inferencing
         // should validate. Default is to not add.
@@ -739,13 +734,11 @@ namespace ortki {
             kExpectFailure
         };
 
-        std::vector<OrtValue> Run(const std::unordered_set<std::string> &excluded_provider_types = {},
-            const RunOptions *run_options = nullptr,
+        std::vector<OrtValue> Run(const RunOptions *run_options = nullptr,
             std::vector<std::unique_ptr<IExecutionProvider>> *execution_providers = nullptr,
             ExecutionMode execution_mode = ExecutionMode::ORT_SEQUENTIAL);
 
         std::vector<OrtValue> Run(SessionOptions session_options,
-                 const std::unordered_set<std::string> &excluded_provider_types = {},
                  const RunOptions *run_options = nullptr,
                  std::vector<std::unique_ptr<IExecutionProvider>> *execution_providers = nullptr,
                  const Graph::ResolveOptions &resolve_options = {},
