@@ -8,9 +8,9 @@
 
 namespace ortki {
 #ifndef NDEBUG
-#define DEBUG(s) std::cout << s << std::endl;
+#define LOG(s) std::cout << s << std::endl;
 #else
-#define DEBUG(s) ;
+#define LOG(s) ;
 #endif
 
 #define CHECK_STATUS_OK(function)                  \
@@ -43,7 +43,7 @@ namespace ortki {
             std::unordered_map<std::string, OrtValue> &feeds,
             std::vector<std::string> &output_names) {
 //        for (auto &output: output_data_) {
-//            DEBUG(output.def_.Name());
+//            LOG(output.def_.Name());
 //            output_names.push_back(output.def_.Name());
 //        }
 
@@ -388,12 +388,11 @@ namespace ortki {
                 model_load_utils::IsAllowReleasedONNXOpsetsOnlySet();
 
 
-        DEBUG("current op")
-        DEBUG(op_)
+        LOG("current op")
+        LOG(op_)
         InitOutput();
         auto schema_registry = ONNX_NAMESPACE::OpSchemaRegistry::Instance();
         auto schema = schema_registry->GetSchema(op_, 15);
-//        DEBUG("init output")
         fetches_.clear();
         bool cache_enabled = cached_model_ != nullptr;
         auto p_model = !cache_enabled ? BuildGraph({}, allow_released_onnx_opset_only) : cached_model_;
