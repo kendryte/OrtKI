@@ -16,13 +16,13 @@ jobs:
         with:
           dotnet-version: 6.0.x
 
-      - name: Restore dependencies
-        working-directory: ${{github.workspace}}/CSharp/OrtKISharp
-        run: dotnet restore
-
       - name: Build
         working-directory: ${{github.workspace}}/CSharp/OrtKISharp
-        run: dotnet build --no-restore
+        run: dotnet build
+
+      - name: Test
+        working-directory: ${{github.workspace}}/CSharp
+        run: dotnet test
 
       - name: Pack
         working-directory: ${{github.workspace}}/CSharp/OrtKISharp
