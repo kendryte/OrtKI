@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>libortki-osx-arm64</id>
+    <version>0.0.1</version>
+    <title>libortki-osx</title>
+    <authors>FusionBolt</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">Apache</license>
+    <description>ortki arm mac binary</description>
+  </metadata>
+  <files>
+    <file src="..\..\install\lib\libortki.dylib" target="runtimes\osx-arm64\native"/>
+    <file src="_._" target="lib\netstandard2.0" />
+  </files>
+</package>
