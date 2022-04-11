@@ -51,10 +51,11 @@ public static class TypeUtil
         { typeof(uint).TypeHandle, OrtDataType.UInt32 },
         { typeof(long).TypeHandle, OrtDataType.Int64 },
         { typeof(ulong).TypeHandle, OrtDataType.UInt64 },
+        { typeof(Float16).TypeHandle, OrtDataType.Float16 },
+        { typeof(BFloat16).TypeHandle, OrtDataType.BFloat16 },
         { typeof(float).TypeHandle, OrtDataType.Float },
         { typeof(double).TypeHandle, OrtDataType.Double },
         { typeof(char).TypeHandle, OrtDataType.String },
-        // todo:bf16 and float 16
     };
     
     private static readonly Dictionary<OrtDataType, Type> _dataTypesToType = new()
@@ -66,6 +67,8 @@ public static class TypeUtil
         { OrtDataType.UInt32, typeof(uint) },
         { OrtDataType.Int64, typeof(long) },
         { OrtDataType.UInt64, typeof(ulong) },
+        { OrtDataType.Float16, typeof(Float16) },
+        { OrtDataType.BFloat16, typeof(BFloat16) },
         { OrtDataType.Float, typeof(float) },
         { OrtDataType.Double, typeof(double) },
     };

@@ -23,3 +23,13 @@ ORTKI_API(void) tensor_seq_dispose(ortki::OrtKITensorSeq*);
 
 ORTKI_API(ortki::OpExecutor*) make_op_executor(const char* name);
 ORTKI_API(void) op_executor_dispose(ortki::OpExecutor* executor);
+
+ORTKI_API(BFloat16*) make_bf16(float);
+ORTKI_API(float) bf16_to_float(BFloat16*);
+ORTKI_API(void) bf16_dispose(BFloat16*);
+ORTKI_API(uint16_t) bf16_to_uint16(MLFloat16*);
+
+ORTKI_API(MLFloat16*) make_fp16(float);
+ORTKI_API(float) fp16_to_float(MLFloat16*);
+ORTKI_API(void) fp16_dispose(MLFloat16*);
+ORTKI_API(uint16_t) fp16_to_uint16(MLFloat16*);

@@ -87,3 +87,43 @@ void op_executor_dispose(ortki::OpExecutor* executor)
 {
     delete executor;
 }
+
+BFloat16* make_bf16(float v)
+{
+    return new BFloat16(v);
+}
+
+float bf16_to_float(BFloat16* v)
+{
+    return v->ToFloat();
+}
+
+void bf16_dispose(BFloat16* v)
+{
+    delete v;
+}
+
+uint16_t bf16_to_uint16(BFloat16* v)
+{
+    return v->val;
+}
+
+MLFloat16* make_fp16(float v)
+{
+    return new MLFloat16(v);
+}
+
+float fp16_to_float(MLFloat16* v)
+{
+    return v->ToFloat();
+}
+
+void fp16_dispose(MLFloat16* v)
+{
+    delete v;
+}
+
+uint16_t fp16_to_uint16(MLFloat16* v)
+{
+    return v->val;
+}
