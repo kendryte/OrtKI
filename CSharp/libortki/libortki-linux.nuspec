@@ -10,7 +10,8 @@
     <description>ortki linux binary</description>
   </metadata>
   <files>
-    <file src="..\..\install\lib\libortki.so" target="runtimes\linux-x64\native"/>
+<!--  I don't known why full install path is ~/work/OrtKI/OrtKI/install/lib/x86_64-linux-gnu -->
+    <file src="..\..\build\libortki.so" target="runtimes\linux-x64\native"/>
     <file src="_._" target="lib\netstandard2.0" />
   </files>
 </package>
