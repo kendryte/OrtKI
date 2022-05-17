@@ -58,6 +58,11 @@ public partial class Tensor : IDisposable, IEquatable<Tensor>
         Handle = handle;
         Mem = IntPtr.Zero;
     }
+
+    ~Tensor()
+    {
+        Dispose(false);    
+    }
     
     public static Tensor MakeTensor<T>(T[] buffer, int[] shape) 
         where T : unmanaged
