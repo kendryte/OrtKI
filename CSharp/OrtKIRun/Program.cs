@@ -8,7 +8,6 @@ using OrtKISharp;
 Console.WriteLine(System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture);
 
 Console.WriteLine("Hello, World!");
-OrtKI.LoadDLL();
 var a = Tensor.MakeTensor(new[] {1f});
 var b = Tensor.MakeTensor(new[] {1f});
 Console.WriteLine("init");
