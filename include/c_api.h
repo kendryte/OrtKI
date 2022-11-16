@@ -6,19 +6,20 @@
 #include "tensor.h"
 #include "op_executor.h"
 
-ORTKI_API(ortki::OrtKITensor*) make_tensor(void *buffer, ortki::DataType data_type, const int* shape, int shape_size);
-ORTKI_API(ortki::OrtKITensor*) make_tensor_empty(ortki::DataType data_type, const int* shape, int shape_size);
+ORTKI_API(ortki::OrtKITensor*) make_tensor(void* buffer, ortki::DataType data_type, const int64_t* shape, size_t shape_size);
+ORTKI_API(ortki::OrtKITensor*) make_tensor_empty(ortki::DataType data_type, const int64_t* shape, size_t shape_size);
 
-ORTKI_API(void) tensor_dispose(ortki::OrtKITensor*);
-ORTKI_API(ortki::DataType) tensor_data_type(ortki::OrtKITensor *tensor);
-ORTKI_API(int) tensor_rank(ortki::OrtKITensor *tensor);
-ORTKI_API(void) tensor_shape(ortki::OrtKITensor *tensor, int *output);
-ORTKI_API(void*) tensor_buffer(ortki::OrtKITensor *tensor);
-ORTKI_API(ortki::OrtKITensor *) tensor_to_type(ortki::OrtKITensor *tensor, ortki::DataType dataType);
-ORTKI_API(void) tensor_reshape(ortki::OrtKITensor *tensor, int *shape, int size);
+ORTKI_API(void) tensor_dispose(ortki::OrtKITensor* tensor);
+ORTKI_API(ortki::DataType) tensor_data_type(ortki::OrtKITensor* tensor);
+ORTKI_API(size_t) tensor_rank(ortki::OrtKITensor* tensor);
+ORTKI_API(size_t) tensor_length(ortki::OrtKITensor* tensor);
+ORTKI_API(void) tensor_shape(ortki::OrtKITensor* tensor, int64_t* output);
+ORTKI_API(void*) tensor_buffer(ortki::OrtKITensor* tensor, size_t* bytes);
+ORTKI_API(ortki::OrtKITensor*) tensor_to_type(ortki::OrtKITensor* tensor, ortki::DataType dataType);
+ORTKI_API(void) tensor_reshape(ortki::OrtKITensor* tensor, int64_t* shape, size_t size);
 
-ORTKI_API(int) tensor_seq_size(ortki::OrtKITensorSeq *);
-ORTKI_API(ortki::OrtKITensor *) tensor_seq_get_value(ortki::OrtKITensorSeq *, int index);
+ORTKI_API(size_t) tensor_seq_size(ortki::OrtKITensorSeq*);
+ORTKI_API(ortki::OrtKITensor*) tensor_seq_get_value(ortki::OrtKITensorSeq*, size_t index);
 ORTKI_API(void) tensor_seq_dispose(ortki::OrtKITensorSeq*);
 
 ORTKI_API(ortki::OpExecutor*) make_op_executor(const char* name);

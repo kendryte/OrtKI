@@ -16,7 +16,7 @@ ortki::OrtKITensorSeq *ortki_Split(ortki::OrtKITensor *input, ortki::OrtKITensor
     Split.AddInput("split", split);
     Split.AddAttribute("axis", axis);
 
-    Split.SetOutputSize(split->shape()[0]);
+    Split.SetOutputSize(split->tensor().Shape()[0]);
     auto results = Split.Run();
     return new ortki::OrtKITensorSeq(results);
 }

@@ -5,6 +5,10 @@
 //
 using OrtKISharp;
 
+#if DEBUG
+OrtKI.LoadDLL();
+#endif
+
 Console.WriteLine(System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture);
 
 Console.WriteLine("Hello, World!");

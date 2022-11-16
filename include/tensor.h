@@ -2,77 +2,61 @@
 #include "common.h"
 #include "util.h"
 #include <core/framework/ort_value.h>
-#include <core/framework/tensor_shape.h>
+#include <core/framework/tensor.h>
 
 namespace ortki {
-    struct OrtKITensor {
-        // auto release data, used for create output without copy
-        OrtKITensor(OrtValue handler) : _handler(handler), _tensor(handler.GetMutable<onnxruntime::Tensor>()), _owner(true) {}
+    class OrtKITensor {
+    public:
+        OrtKITensor(OrtValue value) noexcept : _value(std::move(value)) {}
 
-        // don't auto release
-        OrtKITensor(void *buffer, DataType data_type, const std::vector<int64_t>& shape)
-        : OrtKITensor(buffer, data_type, onnxruntime::TensorShape(shape)){}
-
-        // don't auto release, used for be called with other language
-        OrtKITensor(void *buffer, DataType data_type, onnxruntime::TensorShape shape, bool owner = false) : _owner(owner)
-        {
-            _tensor = new onnxruntime::Tensor(GetDataType(data_type), shape, buffer, OrtMemoryInfo());
-            auto tensor_type = onnxruntime::DataTypeImpl::GetType<onnxruntime::Tensor>();
-            if(owner)
-            {
-                _handler.Init(_tensor, tensor_type, [](auto&& p){ delete p; });
-            }
-            else
-            {
-                _handler.Init(_tensor, tensor_type, [](auto&&){});
-            }
+        const OrtValue& value() const noexcept {
+            return _value;
         }
 
-        template<typename T>
-        T* buffer() {
-            return _tensor->MutableData<T>();
+        OrtValue& value() noexcept {
+            return _value;
         }
 
-        template<typename T>
-        std::vector<T> to_vector() {
-            auto *data = buffer<T>();
-            std::vector<T> dataVec(data, data + length());
-            return dataVec;
+        const onnxruntime::Tensor& tensor() const noexcept {
+            return _value.Get<onnxruntime::Tensor>();
         }
 
-        DataType data_type() const {
-            return static_cast<DataType>(_tensor->GetElementType());
+        onnxruntime::Tensor& tensor() noexcept {
+            return *_value.GetMutable<onnxruntime::Tensor>();
         }
 
-        std::vector<int64_t> shape() const {
-            return GetShapeVector(_tensor->Shape());
+        DataType data_type() const noexcept {
+            return static_cast<DataType>(tensor().GetElementType());
         }
-
-        void reshape(const std::vector<int64_t> &new_shape) const {
-            _tensor->Reshape(onnxruntime::TensorShape(new_shape));
-        }
-
-        size_t length() const {
-            auto &&shape = _tensor->Shape().GetDims();
-            return ComputeSize(shape);
-        }
-
-    // private:
-        onnxruntime::Tensor *_tensor;
-        OrtValue _handler;
-        bool _owner;
+    private:
+        OrtValue _value;
     };
 
     // be used for create tensor array, OrtValue lifetime managed by OrtKITensor
     struct OrtKITensorSeq {
     public:
-        OrtKITensorSeq(const std::vector<OrtValue>& values) : _values(values) {}
+        OrtKITensorSeq(std::vector<OrtValue> values) : _values(std::move(values)) {}
 
-        OrtKITensor *get_value(int index) {
-            return new OrtKITensor(_values[index]);
+        size_t size() const { return _values.size(); }
+
+        const std::vector<OrtValue>& values() const noexcept {
+            return _values;
         }
 
-        int size() const { return _values.size(); }
+        const OrtValue& operator[](size_t index) const noexcept { return _values[index]; }
+        OrtValue& operator[](size_t index) noexcept { return _values[index]; }
+
+        const OrtValue& at(size_t index) const { return _values.at(index); }
+        OrtValue& at(size_t index) { return _values.at(index); }
+
+        const onnxruntime::Tensor& tensor(size_t index) const { return _values[index].Get<onnxruntime::Tensor>(); }
+        onnxruntime::Tensor& tensor(size_t index) { return *_values[index].GetMutable<onnxruntime::Tensor>(); }
+
+        auto begin() const noexcept { return _values.begin(); }
+        auto begin() noexcept { return _values.begin(); }
+
+        auto end() const noexcept { return _values.end(); }
+        auto end() noexcept { return _values.end(); }
     private:
         std::vector<OrtValue> _values;
     };

@@ -2,19 +2,15 @@ cmake_minimum_required(VERSION 3.13)
 
 project(OrtKI)
 
-set(CMAKE_CXX_STANDARD 20)
-if(MSVC)
-    message(STATUS"cmake into msvc")
-    if(CMAKE_BUILD_TYPE MATCHES "Debug")
-        message(STATUS"MSVC into Debug /MDd")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MDd")
-    else()
-        message(STATUS"MSVC into Release /MD")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MD")
-    endif()
-    set(protobuf_MSVC_STATIC_RUNTIME OFF CACHE BOOL "")
-endif()
-set(protobuf_WITH_ZLIB OFF CACHE BOOL "")
+include(ExternalProject)
+
+include(cmake/configure-conan.cmake)
+include(cmake/conan.cmake)
+conan_cmake_run(CONANFILE conanfile.py
+                BASIC_SETUP
+                OPTIONS ${CONAN_OPTS}
+                SETTINGS ${CONAN_SETTINGS}
+                BUILD missing)
 
 set(SRCS
         src/op_executor.cpp
@@ -23,12 +19,21 @@ set(SRCS
         src/environment.cpp
         src/c_api.cpp
         src/operators.cpp
-        src/operators_patch.cpp)
+        src/operators_patch.cpp
+        src/util.cpp)
 
 add_library(ortki SHARED ${SRCS})
 
-add_compile_definitions(ONNX_ML=1)
-add_compile_definitions(ONNX_NAMESPACE=onnx)
+#add_compile_definitions(ONNX_ML=1)
+#add_compile_definitions(ONNX_NAMESPACE=onnx)
+
+set(onnxruntime_DISABLE_RTTI OFF)
+set(onnxruntime_BUILD_UNIT_TESTS OFF)
+set(onnxruntime_DISABLE_CONTRIB_OPS ON)
+set(onnxruntime_DISABLE_ML_OPS ON)
+set(onnxruntime_DISABLE_SPARSE_TENSORS ON)
+set(onnxruntime_DISABLE_OPTIONAL_TYPE ON)
+set(protobuf_MSVC_STATIC_RUNTIME OFF)
 
 add_subdirectory(onnxruntime/cmake/)
 message(STATUS "msg")

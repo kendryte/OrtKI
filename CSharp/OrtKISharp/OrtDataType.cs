@@ -23,7 +23,7 @@ public enum OrtDataType : byte
     BFloat16 = 16
 }
 
-public static class TypeUtil
+internal static class TypeUtil
 {
     private static readonly Dictionary<OrtDataType, int> _DataTypeToLengths = new()
     {
@@ -51,13 +51,13 @@ public static class TypeUtil
         { typeof(uint).TypeHandle, OrtDataType.UInt32 },
         { typeof(long).TypeHandle, OrtDataType.Int64 },
         { typeof(ulong).TypeHandle, OrtDataType.UInt64 },
-        { typeof(Float16).TypeHandle, OrtDataType.Float16 },
+        { typeof(Half).TypeHandle, OrtDataType.Float16 },
         { typeof(BFloat16).TypeHandle, OrtDataType.BFloat16 },
         { typeof(float).TypeHandle, OrtDataType.Float },
         { typeof(double).TypeHandle, OrtDataType.Double },
         { typeof(char).TypeHandle, OrtDataType.String },
     };
-    
+
     private static readonly Dictionary<OrtDataType, Type> _dataTypesToType = new()
     {
         { OrtDataType.Bool, typeof(bool) },
@@ -67,7 +67,7 @@ public static class TypeUtil
         { OrtDataType.UInt32, typeof(uint) },
         { OrtDataType.Int64, typeof(long) },
         { OrtDataType.UInt64, typeof(ulong) },
-        { OrtDataType.Float16, typeof(Float16) },
+        { OrtDataType.Float16, typeof(Half) },
         { OrtDataType.BFloat16, typeof(BFloat16) },
         { OrtDataType.Float, typeof(float) },
         { OrtDataType.Double, typeof(double) },
@@ -81,7 +81,7 @@ public static class TypeUtil
         }
         throw new ArgumentOutOfRangeException("Unsupported OrtDataType: " + dt);
     }
-    
+
     public static OrtDataType FromType(Type t)
     {
         if (_typeToDataTypes.TryGetValue(t.TypeHandle, out var type))
@@ -99,7 +99,7 @@ public static class TypeUtil
         }
         throw new ArgumentOutOfRangeException("Unsupported OrtDataType: " + t);
     }
-    
+
     public static byte[] GetBytes<T>(ReadOnlySpan<T> span)
         where T : unmanaged
         => MemoryMarshal.AsBytes(span).ToArray();

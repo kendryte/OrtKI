@@ -6,7 +6,7 @@ namespace ortki
 #define DEFAULT_OPSET 15
 
 #ifdef _WIN32
-    #include <intrin.h>
+#include <intrin.h>
 #define ORTKI_API(ret) extern "C" __declspec(dllexport) ret
 #else
 #define ORTKI_API(ret) extern "C" __attribute__((visibility("default"))) ret
@@ -49,27 +49,27 @@ namespace ortki
             throw std::runtime_error("Unimplemented input type in OpExecutor::AddInput"); \
 
         DATATYPE_TO_T(data_type, GET_TYPE, GET_UNIMPL_TYPE)
-//        switch(data_type)
-//        {
-//            GET_UNIMPL_TYPE(UNDEFINED);
-//            GET_TYPE(FLOAT, float);
-//            GET_TYPE(UINT8, uint8_t);
-//            GET_TYPE(INT8, int8_t);
-//            GET_TYPE(UINT16, uint16_t);
-//            GET_TYPE(INT16, int16_t);
-//            GET_TYPE(INT32, int32_t);
-//            GET_TYPE(INT64, int64_t);
-//            GET_UNIMPL_TYPE(STRING);
-//            GET_TYPE(BOOL, bool);
-//            GET_UNIMPL_TYPE(FLOAT16);
-//            GET_TYPE(DOUBLE, double);
-//            GET_TYPE(UINT32, uint32_t);
-//            GET_TYPE(UINT64, uint64_t);
-//            GET_UNIMPL_TYPE(COMPLEX64);
-//            GET_UNIMPL_TYPE(COMPLEX128);
-//            GET_UNIMPL_TYPE(BFLOAT16);
-//        }
-//        throw std::runtime_error("Unsupported DataType");
+            //        switch(data_type)
+            //        {
+            //            GET_UNIMPL_TYPE(UNDEFINED);
+            //            GET_TYPE(FLOAT, float);
+            //            GET_TYPE(UINT8, uint8_t);
+            //            GET_TYPE(INT8, int8_t);
+            //            GET_TYPE(UINT16, uint16_t);
+            //            GET_TYPE(INT16, int16_t);
+            //            GET_TYPE(INT32, int32_t);
+            //            GET_TYPE(INT64, int64_t);
+            //            GET_UNIMPL_TYPE(STRING);
+            //            GET_TYPE(BOOL, bool);
+            //            GET_UNIMPL_TYPE(FLOAT16);
+            //            GET_TYPE(DOUBLE, double);
+            //            GET_TYPE(UINT32, uint32_t);
+            //            GET_TYPE(UINT64, uint64_t);
+            //            GET_UNIMPL_TYPE(COMPLEX64);
+            //            GET_UNIMPL_TYPE(COMPLEX128);
+            //            GET_UNIMPL_TYPE(BFLOAT16);
+            //        }
+            //        throw std::runtime_error("Unsupported DataType");
 #undef GET_TYPE
 #undef GET_UNIMPL_TYPE
     }

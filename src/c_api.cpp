@@ -1,24 +1,28 @@
 #include "c_api.h"
 #include <core/session/onnxruntime_cxx_api.h>
 #include <core/framework/ort_value.h>
+#include "allocator_manager.h"
 #include "operators.h"
 
 using namespace ortki;
-OrtKITensor* make_tensor(void *buffer, DataType data_type, const int* shape, int rank)
+using namespace onnxruntime;
+
+OrtKITensor* make_tensor(void* buffer, DataType data_type, const int64_t* shape, size_t rank)
 {
-    std::vector<int64_t> shape_vec(shape, shape + rank);
-    return new OrtKITensor(buffer, data_type, shape_vec);
+    OrtValue value;
+    Tensor::InitOrtValue(GetDataType(data_type), { shape,rank }, buffer, OrtMemoryInfo(), value);
+    return new OrtKITensor(value);
 }
 
-OrtKITensor* make_tensor_empty(DataType data_type, const int* shape, int rank)
+OrtKITensor* make_tensor_empty(DataType data_type, const int64_t* shape, size_t rank)
 {
-    std::vector<int64_t> shape_vec(shape, shape + rank);
-    auto size = ComputeSize(shape_vec);
-    auto buffer_length = size * GetDataType(data_type)->Size();
-    void *buffer = new char[buffer_length];
-    memset(buffer, 0, buffer_length);
-    auto *tensor = new OrtKITensor(buffer, data_type, shape_vec);
-    return tensor;
+    OrtValue value;
+    auto allocator = ortki::AllocatorManager::Instance().GetAllocator(CPU);
+    Tensor::InitOrtValue(GetDataType(data_type), { shape,rank }, allocator, value);
+    auto tensor = value.GetMutable<Tensor>();
+    auto data = tensor->MutableDataRaw();
+    memset(data, 0, tensor->SizeInBytes());
+    return new OrtKITensor(value);
 }
 
 void tensor_dispose(OrtKITensor* t)
@@ -26,66 +30,66 @@ void tensor_dispose(OrtKITensor* t)
     delete t;
 }
 
-DataType tensor_data_type(OrtKITensor *tensor) { return tensor->data_type(); }
-
-int tensor_rank(OrtKITensor *tensor) { return tensor->shape().size(); }
-
-void tensor_shape(OrtKITensor *tensor, int *output)
+DataType tensor_data_type(OrtKITensor* tensor)
 {
-    auto &&shape = tensor->shape();
-    for(int i = 0; i < shape.size(); ++i)
-    {
-        output[i] = shape[i];
-    }
+    return tensor->data_type();
 }
 
-void* tensor_buffer(ortki::OrtKITensor *tensor)
+size_t tensor_rank(OrtKITensor* tensor)
 {
-#define GET_BUFFER(tensor_type, T) \
-    case onnx::TensorProto_DataType_##tensor_type: \
-        return reinterpret_cast<void*>(tensor->buffer<T>());                \
-
-#define GET_UNIMPL_BUFFER(tensor_type) \
-    case onnx::TensorProto_DataType_##tensor_type: \
-        throw std::runtime_error("Unimplemented input type in tensor_buffer");
-    DATATYPE_TO_T(tensor->data_type(), GET_BUFFER, GET_UNIMPL_BUFFER);
+    return tensor->tensor().Shape().NumDimensions();
 }
 
-ortki::OpExecutor *make_op_executor(const char* name)
+size_t tensor_length(OrtKITensor* tensor)
+{
+    return tensor->tensor().Shape().Size();
+}
+
+void tensor_shape(OrtKITensor* tensor, int64_t* output)
+{
+    tensor->tensor().Shape().CopyDims(output, tensor->tensor().Shape().NumDimensions());
+}
+
+void* tensor_buffer(OrtKITensor* tensor, size_t* bytes)
+{
+    *bytes = tensor->tensor().SizeInBytes();
+    return tensor->tensor().MutableDataRaw();
+}
+
+ortki::OpExecutor* make_op_executor(const char* name)
 {
     return new OpExecutor(name);
 }
 
-int tensor_seq_size(ortki::OrtKITensorSeq *seq)
-{
-    return seq->size();
-}
-
-ortki::OrtKITensor * tensor_seq_get_value(ortki::OrtKITensorSeq *seq, int index)
-{
-    return seq->get_value(index);
-}
-
-void tensor_seq_dispose(ortki::OrtKITensorSeq* seq)
-{
-    delete seq;
-}
-
-
 // onnxruntime::Tensor don't support directly type cast
-ortki::OrtKITensor *tensor_to_type(ortki::OrtKITensor *tensor, ortki::DataType dataType)
+OrtKITensor* tensor_to_type(OrtKITensor* tensor, ortki::DataType dataType)
 {
     return ortki_Cast(tensor, dataType);
 }
 
-void tensor_reshape(ortki::OrtKITensor *tensor, int *shape, int size)
+void tensor_reshape(ortki::OrtKITensor* tensor, int64_t* shape, size_t size)
 {
-    tensor->reshape(std::vector<int64_t>(shape, shape + size));
+    tensor->tensor().Reshape({ shape,size });
 }
 
 void op_executor_dispose(ortki::OpExecutor* executor)
 {
     delete executor;
+}
+
+size_t tensor_seq_size(ortki::OrtKITensorSeq* seq)
+{
+    return seq->size();
+}
+
+ortki::OrtKITensor* tensor_seq_get_value(ortki::OrtKITensorSeq* seq, size_t index)
+{
+    return new OrtKITensor(seq->at(index));
+}
+
+void tensor_seq_dispose(ortki::OrtKITensorSeq* seq)
+{
+    delete seq;
 }
 
 BFloat16* make_bf16(float v)
