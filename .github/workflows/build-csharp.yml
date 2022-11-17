@@ -18,15 +18,15 @@ jobs:
 
       - name: Build
         working-directory: ${{github.workspace}}/CSharp/OrtKISharp
-        run: dotnet build
+        run: dotnet build -c Release
 
       - name: Test
         working-directory: ${{github.workspace}}/CSharp
-        run: dotnet test
+        run: dotnet test -c Release
 
       - name: Pack
         working-directory: ${{github.workspace}}/CSharp/OrtKISharp
-        run: nuget pack
+        run: nuget pack -Build -Symbols -Properties Configuration=Release
 
       - name: Upload Package
         working-directory: ${{github.workspace}}/CSharp/OrtKISharp
