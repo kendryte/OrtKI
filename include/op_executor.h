@@ -298,7 +298,6 @@ namespace ortki {
         {
             std::unique_ptr<TensorSeq> ptr;
             ONNX_NAMESPACE::TypeProto proto;
-            auto seqtype = proto.mutable_sequence_type();
 
             if (size)
             {
@@ -312,7 +311,10 @@ namespace ortki {
 
                 ptr = std::make_unique<TensorSeq>(datatype);
                 ptr->SetElements(std::move(seq_tensors));
-                seqtype->mutable_elem_type()->CopyFrom(*datatype->GetTypeProto());
+
+                ONNX_NAMESPACE::TypeProto elem_proto;
+                elem_proto.mutable_tensor_type()->set_elem_type(tensors[0]->tensor().GetElementType());
+                proto.mutable_sequence_type()->mutable_elem_type()->CopyFrom(elem_proto);
             }
 
             OrtValue value;

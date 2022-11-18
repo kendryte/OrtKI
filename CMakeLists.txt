@@ -32,7 +32,7 @@ set(onnxruntime_DISABLE_RTTI OFF)
 set(onnxruntime_BUILD_UNIT_TESTS OFF)
 set(onnxruntime_DISABLE_CONTRIB_OPS ON)
 set(onnxruntime_DISABLE_ML_OPS ON)
-set(onnxruntime_DISABLE_SPARSE_TENSORS ON)
+set(onnxruntime_DISABLE_SPARSE_TENSORS OFF)
 set(onnxruntime_DISABLE_OPTIONAL_TYPE ON)
 set(protobuf_MSVC_STATIC_RUNTIME OFF)
 

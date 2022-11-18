@@ -89,6 +89,15 @@ public class KernelTest
     }
 
     [Fact]
+    public void TestStack()
+    {
+        var inputA = Tensor.MakeTensor(new[] { 1, 1 }, new long[] { 1, 2 });
+        var inputB = Tensor.MakeTensor(new[] { 3, 3 }, new long[] { 1, 2 });
+        var result = OrtKI.ConcatFromSequence(new[] { inputA, inputB }, 0, 1);
+        Assert.Equal(new long[] { 2, 1, 2 }, result.Shape);
+    }
+
+    [Fact]
     public void TestOneHot()
     {
         var indices = Tensor.MakeTensor(new[] { 3, 2, 4, 0 });
