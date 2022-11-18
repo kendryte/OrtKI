@@ -30,4 +30,4 @@ jobs:
 
       - name: Upload Package
         working-directory: ${{github.workspace}}/CSharp/OrtKISharp
-        run: nuget push bin\Release\*.nupkg 54868e95-5638-4dc7-981d-47fc6d76a7cb -source https://www.myget.org/F/magicallibs/api/v3/index.json
+        run: nuget push bin/Release/*.nupkg 54868e95-5638-4dc7-981d-47fc6d76a7cb -source https://www.myget.org/F/magicallibs/api/v3/index.json
