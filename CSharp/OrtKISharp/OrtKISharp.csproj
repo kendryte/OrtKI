@@ -5,6 +5,12 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <PackageId>OrtKISharp</PackageId>
+        <Version>0.0.2</Version>
+        <Authors>FusionBolt</Authors>
+        <Description>unofficial onnxruntime kernel interface</Description>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <PackageTags>onnx onnxruntime</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
