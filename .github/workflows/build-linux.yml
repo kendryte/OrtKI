@@ -8,6 +8,8 @@ env:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    container:
+      image: sunnycase/manylinux2010_x86_64
     strategy:
       matrix:
         os: [ ubuntu-18.04 ]
