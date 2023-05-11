@@ -12,7 +12,7 @@ jobs:
       image: sunnycase/manylinux2010_x86_64
     strategy:
       matrix:
-        os: [ ubuntu-18.04 ]
+        os: [ ubuntu-latest ]
 
     steps:
       - uses: actions/checkout@v2
@@ -20,9 +20,15 @@ jobs:
           submodules: recursive
       - uses: seanmiddleditch/gha-setup-ninja@master
 
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.7
+
       - name: Install Conan
-        id: conan
-        uses: turtlebrowser/get-conan@main
+        shell: bash
+        run: |
+          pip install conan==1.58
 
       - name: Create Build Environment
         run: cmake -E make_directory ${{github.workspace}}/build

@@ -10,7 +10,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ windows-2019 ]
+        os: [ windows-latest ]
 
     steps:
       - uses: actions/checkout@v2
@@ -24,9 +24,15 @@ jobs:
         with:
           arch: win64
 
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.7
+
       - name: Install Conan
-        id: conan
-        uses: turtlebrowser/get-conan@main
+        shell: bash
+        run: |
+          pip install conan==1.58
 
       - name: Create Build Environment
         run: cmake -E make_directory ${{github.workspace}}/build

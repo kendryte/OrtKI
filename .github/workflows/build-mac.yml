@@ -10,7 +10,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ macos-10.15 ]
+        os: [ macos-latest ]
 
     steps:
       - uses: actions/checkout@v2
@@ -22,9 +22,15 @@ jobs:
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1.9.0
 
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.7
+
       - name: Install Conan
-        id: conan
-        uses: turtlebrowser/get-conan@main
+        shell: bash
+        run: |
+          pip install conan==1.58
 
       - name: Create Build Environment
         run: cmake -E make_directory ${{github.workspace}}/build
