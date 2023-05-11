@@ -8,8 +8,6 @@ env:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-    container:
-      image: sunnycase/manylinux2010_x86_64
     strategy:
       matrix:
         os: [ ubuntu-latest ]
@@ -19,34 +17,16 @@ jobs:
         with:
           submodules: recursive
       - uses: seanmiddleditch/gha-setup-ninja@master
-
-      - name: Setup Python
-        uses: actions/setup-python@v4
+  
+      - name: Build in docker
+        uses: docker://sunnycase/manylinux2010_x86_64
         with:
-          python-version: 3.7
-
-      - name: Install Conan
-        shell: bash
-        run: |
-          pip install conan==1.58
-
-      - name: Create Build Environment
-        run: cmake -E make_directory ${{github.workspace}}/build
-
-      - name: Configure CMake
-        shell: bash
-        working-directory: ${{github.workspace}}/build
-        run: cmake .. -G Ninja -DCMAKE_BUILD_TYPE=$BUILD_TYPE -Donnxruntime_BUILD_UNIT_TESTS=OFF -DBUILD_TEST_EXE=OFF
-
-      - name: Build
-        shell: bash
-        working-directory: ${{github.workspace}}/build
-        run: cmake --build . --config $BUILD_TYPE
-
-      - name: Install
-        shell: bash
-        working-directory: ${{github.workspace}}/build
-        run: cmake --install . --prefix ../install
+            args: |
+                pip install conan==1.58 ninja
+                cmake -E make_directory ${{github.workspace}}/build
+                cmake .. -G Ninja -DCMAKE_BUILD_TYPE=$BUILD_TYPE -Donnxruntime_BUILD_UNIT_TESTS=OFF -DBUILD_TEST_EXE=OFF
+                cmake --build . --config $BUILD_TYPE
+                cmake --install . --prefix ../install
 
       - name: BuildNugetPKG
         shell: bash
