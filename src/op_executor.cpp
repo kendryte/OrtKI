@@ -127,8 +127,7 @@ namespace ortki {
 #endif  // !defined(DISABLE_SPARSE_TENSORS)
 
     std::unique_ptr<onnxruntime::Model> OpExecutor::BuildGraph(
-        const std::unordered_map<std::string, int>& extra_domain_to_version,
-        bool allow_released_onnx_opset_only) {
+        const std::unordered_map<std::string, int>& extra_domain_to_version) {
         // Generate the input & output def lists
         std::vector<onnxruntime::NodeArg*> node_input_defs;
         std::vector<onnxruntime::NodeArg*> output_defs;
@@ -159,7 +158,7 @@ namespace ortki {
         auto p_model = std::make_unique<onnxruntime::Model>(
             "test", false, ModelMetaData(), PathString(), custom_schema_registries_,
             domain_to_version, std::vector<ONNX_NAMESPACE::FunctionProto>{},
-            DefaultLoggingManager().DefaultLogger(), allow_released_onnx_opset_only);
+            DefaultLoggingManager().DefaultLogger());
         onnxruntime::Graph& graph = p_model->MainGraph();
         AddNodes(graph, node_input_defs, output_defs, add_attribute_funcs_);
         return p_model;
@@ -170,7 +169,7 @@ namespace ortki {
         Model& model, SessionType& session_object, const RunOptions* run_options,
         const std::unordered_map<std::string, OrtValue>& feeds,
         const std::vector<std::string>& output_names,
-        const std::string& provider_type, bool allow_released_onnx_opset_only) {
+        const std::string& provider_type) {
         std::string s1;
         const bool rc = model.ToProto().SerializeToString(&s1);
         if (!rc) {
@@ -178,7 +177,7 @@ namespace ortki {
             return {};
         }
         std::stringstream sstr(s1);
-        auto status = session_object.Load(sstr, allow_released_onnx_opset_only);
+        auto status = session_object.Load(sstr);
         // EXPECT_TRUE(status.IsOK()) << status.ErrorMessage();
         if (!status.IsOK()) {
             ORT_THROW(std::string("Load failed with status: ") + status.ErrorMessage());
@@ -238,10 +237,6 @@ namespace ortki {
         run_called_ = true;
 #endif
 
-        auto allow_released_onnx_opset_only =
-            IsAllowReleasedONNXOpsetsOnlySetForThisTest() &&
-            model_load_utils::IsAllowReleasedONNXOpsetsOnlySet();
-
 
         LOG("current op");
         LOG(op_);
@@ -250,7 +245,7 @@ namespace ortki {
         auto schema = schema_registry->GetSchema(op_, 15);
         fetches_.clear();
         bool cache_enabled = cached_model_ != nullptr;
-        auto p_model = !cache_enabled ? BuildGraph({}, allow_released_onnx_opset_only) : cached_model_;
+        auto p_model = !cache_enabled ? BuildGraph({}) : cached_model_;
         auto& graph = p_model->MainGraph();
 
         std::vector<std::string> output_names;
@@ -288,7 +283,7 @@ namespace ortki {
 
         fetches_ = ExecuteModel<InferenceSession>(
             *p_model, session_object,
-            run_options, feeds, output_names, kCpuExecutionProvider, allow_released_onnx_opset_only);
+            run_options, feeds, output_names, kCpuExecutionProvider);
         // After the model has initialized (happens in ExecuteModel),
         // we should be able to tell how many constant initializers were pre-packed
         // and out of these pre-packed ones how many of them used a "cached" version

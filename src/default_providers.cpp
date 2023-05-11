@@ -57,16 +57,6 @@ namespace ortki {
 #endif
     }
 
-    std::unique_ptr<IExecutionProvider> MIGraphXExecutionProviderWithOptions(const OrtMIGraphXProviderOptions *params) {
-#ifdef USE_MIGRAPHX
-        if (auto factory = CreateExecutionProviderFactory_MIGraphX(params))
-        return factory->CreateProvider();
-#else
-        ORT_UNUSED_PARAMETER(params);
-#endif
-        return nullptr;
-    }
-
     std::unique_ptr<IExecutionProvider> DefaultOpenVINOExecutionProvider() {
 #ifdef USE_OPENVINO
         OrtOpenVINOProviderOptions params;

@@ -86,8 +86,6 @@ endif()
 
 if(MSVC)
     target_link_libraries(ortki
-            absl_raw_hash_set
-            absl_hash_function_defaults
             re2
             onnx)
     if(CMAKE_BUILD_TYPE MATCHES "Debug")
@@ -97,8 +95,6 @@ else()
     target_link_libraries(ortki
             nsync_cpp
             dl
-            absl_raw_hash_set
-            absl_hash_function_defaults
             re2
             onnx)
 endif()
