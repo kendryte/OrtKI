@@ -37,7 +37,6 @@ set(onnxruntime_DISABLE_OPTIONAL_TYPE ON)
 set(protobuf_MSVC_STATIC_RUNTIME OFF)
 
 add_subdirectory(onnxruntime/cmake/)
-message(STATUS "msg")
 
 set(INCLUDE_DIRS
         include
@@ -81,7 +80,7 @@ if(MSVC)
 elseif(APPLE)
     target_link_libraries(ortki -Wl,-force_load ${ONNXRUNTIME_TARGETS})
 else()
-    target_link_libraries(ortki -Wl,--whole-archive ${ONNXRUNTIME_TARGETS} -Wl,--no-whole-archive)
+    target_link_libraries(ortki -Wl,--whole-archive ${ONNXRUNTIME_TARGETS} -Wl,--no-whole-archive -static-libstdc++)
 endif()
 
 if(MSVC)
