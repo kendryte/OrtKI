@@ -3,7 +3,9 @@
 
 namespace ortki
 {
-#define DEFAULT_OPSET 15
+// https://onnxruntime.ai/docs/reference/compatibility.html
+// ortki/onnxruntime/VERSION_NUMBER
+#define DEFAULT_OPSET 16
 
 #ifdef _WIN32
 #include <intrin.h>
