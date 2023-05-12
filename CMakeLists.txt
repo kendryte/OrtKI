@@ -84,22 +84,19 @@ if(MSVC)
 elseif(APPLE)
     target_link_libraries(ortki -Wl,-force_load ${ONNXRUNTIME_TARGETS})
 else()
-    target_link_libraries(ortki -Wl,--whole-archive ${ONNXRUNTIME_TARGETS} -Wl,--no-whole-archive -static-libstdc++)
+    target_link_libraries(ortki -Wl,--whole-archive ${ONNXRUNTIME_TARGETS} -Wl,--no-whole-archive -static-libstdc++ -Wl,--no-undefined)
 endif()
 
+target_link_libraries(ortki re2 onnx cpuinfo)
+
 if(MSVC)
-    target_link_libraries(ortki
-            re2
-            onnx)
     if(CMAKE_BUILD_TYPE MATCHES "Debug")
         target_link_libraries(ortki Dbghelp)
     endif()
 else()
     target_link_libraries(ortki
-            nsync_cpp
             dl
-            re2
-            onnx)
+            nsync_cpp)
 endif()
 
 
