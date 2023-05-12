@@ -48,10 +48,9 @@ set(INCLUDE_DIRS
         onnxruntime/onnxruntime/core/providers
         onnxruntime/onnxruntime/
         onnxruntime/include/onnxruntime
-        onnxruntime/cmake/external/mp11/include
-        onnxruntime/cmake/external/nsync/public
         ${CMAKE_CURRENT_BINARY_DIR}/onnxruntime/cmake/external/onnx
         ${CMAKE_CURRENT_BINARY_DIR}/_deps/abseil_cpp-src/
+        ${CMAKE_CURRENT_BINARY_DIR}/_deps/mp11-src/include
         ${CMAKE_CURRENT_BINARY_DIR}/onnxruntime/cmake)
 
 target_include_directories(ortki PUBLIC ${INCLUDE_DIRS})
