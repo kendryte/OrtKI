@@ -5,6 +5,7 @@
 #include <core/graph/model.h>
 #include <core/framework/customregistry.h>
 #include <core/framework/run_options.h>
+#include <core/framework/TensorSeq.h>
 #include "allocator_manager.h"
 #include "common.h"
 #include "tensor.h"
@@ -302,11 +303,10 @@ namespace ortki {
             if (size)
             {
                 auto datatype = tensors[0]->tensor().DataType();
-                std::vector<Tensor> seq_tensors;
-                seq_tensors.reserve(size);
+                std::vector<OrtValue> seq_tensors(size);
                 for (size_t i = 0; i < size; ++i) {
                     auto& src_tensor = tensors[i]->tensor();
-                    seq_tensors.emplace_back(datatype, src_tensor.Shape(), src_tensor.MutableDataRaw(), OrtMemoryInfo());
+                    Tensor::InitOrtValue(datatype, src_tensor.Shape(), src_tensor.MutableDataRaw(), OrtMemoryInfo(), seq_tensors[i]);
                 }
 
                 ptr = std::make_unique<TensorSeq>(datatype);

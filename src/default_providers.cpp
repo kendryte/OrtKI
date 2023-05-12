@@ -5,7 +5,7 @@
 
 namespace ortki {
     std::unique_ptr<IExecutionProvider> DefaultCpuExecutionProvider(bool enable_arena) {
-        return CreateExecutionProviderFactory_CPU(enable_arena)->CreateProvider();
+        return CPUProviderFactoryCreator::Create(enable_arena)->CreateProvider();
     }
 
     std::unique_ptr<IExecutionProvider> DefaultTensorrtExecutionProvider() {

@@ -36,6 +36,10 @@ set(onnxruntime_DISABLE_SPARSE_TENSORS OFF)
 set(onnxruntime_DISABLE_OPTIONAL_TYPE ON)
 set(protobuf_MSVC_STATIC_RUNTIME OFF)
 
+if(MSVC)
+    add_compile_options(/wd4127)
+endif()
+
 add_subdirectory(onnxruntime/cmake/)
 
 set(INCLUDE_DIRS
