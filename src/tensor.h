@@ -34,7 +34,7 @@ namespace ortki {
     };
 
     // be used for create tensor array, OrtValue lifetime managed by OrtKITensor
-    struct OrtKITensorSeq {
+    class OrtKITensorSeq {
     public:
         OrtKITensorSeq(std::vector<OrtValue> values) : _values(std::move(values)) {}
 

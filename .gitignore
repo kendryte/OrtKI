@@ -8,3 +8,4 @@
 __pycache__
 launchSettings.json
 /build
+/CMakeUserPresets.json

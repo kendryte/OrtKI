@@ -3,16 +3,6 @@ set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
 project(OrtKI)
 
-if (NOT CONAN_CXX_FLAGS) 
-    include(cmake/configure-conan.cmake)
-    include(cmake/conan.cmake)
-    conan_cmake_run(CONANFILE conanfile.py
-                    BASIC_SETUP
-                    OPTIONS ${CONAN_OPTS}
-                    SETTINGS ${CONAN_SETTINGS}
-                    BUILD missing)
-endif()
-
 find_package(onnxruntime REQUIRED CONFIG)
 
 set(SRCS
@@ -25,7 +15,7 @@ set(SRCS
         src/operators_patch.cpp
         src/util.cpp)
 
-add_library(ortki SHARED ${SRCS})
+add_library(ortki ${SRCS})
 
 #add_compile_definitions(ONNX_ML=1)
 #add_compile_definitions(ONNX_NAMESPACE=onnx)
@@ -39,7 +29,8 @@ set(onnxruntime_DISABLE_OPTIONAL_TYPE ON)
 set(protobuf_MSVC_STATIC_RUNTIME OFF)
 
 if(MSVC)
-    add_compile_options(/wd4127)
+    target_compile_options(ortki PRIVATE /wd4127)
+    target_compile_definitions(ortki PRIVATE NOMINMAX NOGDI)
 else()
     target_link_options(ortki PRIVATE -Wl,--no-undefined)
 endif()
