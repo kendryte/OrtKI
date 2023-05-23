@@ -1,5 +1,7 @@
 #include "allocator_manager.h"
 
+using namespace onnxruntime;
+
 namespace ortki {
 // Dummy Arena which just call underline device allocator directly.
     class DummyArena : public IAllocator {

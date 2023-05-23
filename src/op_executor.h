@@ -3,10 +3,9 @@
 #include <functional>
 #include <core/graph/graph.h>
 #include <core/graph/model.h>
-#include <core/framework/customregistry.h>
+#include <onnxruntime/core/framework/execution_provider.h>
 #include <core/framework/run_options.h>
 #include <core/framework/TensorSeq.h>
-#include "allocator_manager.h"
 #include "common.h"
 #include "tensor.h"
 #include "environment.h"
@@ -28,84 +27,20 @@ namespace ortki {
         std::vector<Tensor<T>> tensors;
     };
 
-    // Function templates to translate C++ types into ONNX_NAMESPACE::TensorProto_DataTypes
-    template<typename T>
-    constexpr ONNX_NAMESPACE::TensorProto_DataType TypeToDataType();
-
     template<>
-    constexpr ONNX_NAMESPACE::TensorProto_DataType TypeToDataType<float>() {
-        return ONNX_NAMESPACE::TensorProto_DataType_FLOAT;
+    constexpr DataType TypeToDataType<MLFloat16>() {
+        return DataType_FLOAT16;
     }
 
     template<>
-    constexpr ONNX_NAMESPACE::TensorProto_DataType TypeToDataType<double>() {
-        return ONNX_NAMESPACE::TensorProto_DataType_DOUBLE;
-    }
-
-    template<>
-    constexpr ONNX_NAMESPACE::TensorProto_DataType TypeToDataType<int32_t>() {
-        return ONNX_NAMESPACE::TensorProto_DataType_INT32;
-    }
-
-    template<>
-    constexpr ONNX_NAMESPACE::TensorProto_DataType TypeToDataType<int64_t>() {
-        return ONNX_NAMESPACE::TensorProto_DataType_INT64;
-    }
-
-    template<>
-    constexpr ONNX_NAMESPACE::TensorProto_DataType TypeToDataType<bool>() {
-        return ONNX_NAMESPACE::TensorProto_DataType_BOOL;
-    }
-
-    template<>
-    constexpr ONNX_NAMESPACE::TensorProto_DataType TypeToDataType<int8_t>() {
-        return ONNX_NAMESPACE::TensorProto_DataType_INT8;
-    }
-
-    template<>
-    constexpr ONNX_NAMESPACE::TensorProto_DataType TypeToDataType<int16_t>() {
-        return ONNX_NAMESPACE::TensorProto_DataType_INT16;
-    }
-
-    template<>
-    constexpr ONNX_NAMESPACE::TensorProto_DataType TypeToDataType<uint8_t>() {
-        return ONNX_NAMESPACE::TensorProto_DataType_UINT8;
-    }
-
-    template<>
-    constexpr ONNX_NAMESPACE::TensorProto_DataType TypeToDataType<uint16_t>() {
-        return ONNX_NAMESPACE::TensorProto_DataType_UINT16;
-    }
-
-    template<>
-    constexpr ONNX_NAMESPACE::TensorProto_DataType TypeToDataType<uint32_t>() {
-        return ONNX_NAMESPACE::TensorProto_DataType_UINT32;
-    }
-
-    template<>
-    constexpr ONNX_NAMESPACE::TensorProto_DataType TypeToDataType<uint64_t>() {
-        return ONNX_NAMESPACE::TensorProto_DataType_UINT64;
-    }
-
-    template<>
-    constexpr ONNX_NAMESPACE::TensorProto_DataType TypeToDataType<std::string>() {
-        return ONNX_NAMESPACE::TensorProto_DataType_STRING;
-    }
-
-    template<>
-    constexpr ONNX_NAMESPACE::TensorProto_DataType TypeToDataType<MLFloat16>() {
-        return ONNX_NAMESPACE::TensorProto_DataType_FLOAT16;
-    }
-
-    template<>
-    constexpr ONNX_NAMESPACE::TensorProto_DataType TypeToDataType<BFloat16>() {
-        return ONNX_NAMESPACE::TensorProto_DataType_BFLOAT16;
+    constexpr DataType TypeToDataType<BFloat16>() {
+        return DataType_BFLOAT16;
     }
 
     template<typename T>
     struct TTypeProto {
         TTypeProto(const std::vector<int64_t>* shape = nullptr) {
-            proto.mutable_tensor_type()->set_elem_type(TypeToDataType<T>());
+            proto.mutable_tensor_type()->set_elem_type((ONNX_NAMESPACE::TensorProto_DataType)TypeToDataType<T>());
 
             if (shape) {
                 auto mutable_shape = proto.mutable_tensor_type()->mutable_shape();
@@ -347,14 +282,6 @@ namespace ortki {
             input_data_.emplace_back(NodeArg(name, &TTensorType<T>::s_type_proto.proto), OrtValue());
         }
 
-        // Generate the reference outputs with the model file
-        // void AddReferenceOutputs(const std::string &model_path);
-
-        void AddCustomOpRegistry(std::shared_ptr<CustomRegistry> registry) {
-            custom_schema_registries_.push_back(registry->GetOpschemaRegistry());
-            custom_session_registries_.push_back(registry);
-        }
-
         template<typename T>
         void AddAttribute(std::string name, T value) {
             // Generate a the proper AddAttribute call for later
@@ -420,14 +347,6 @@ namespace ortki {
 
         void SetDeterminism(bool use_determinism) {
             use_determinism_ = use_determinism;
-        }
-
-        void EnableSharingOfPrePackedWeightsAcrossSessions() {
-            add_prepacked_shared_container_to_sessions_ = true;
-        }
-
-        size_t GetNumPrePackedWeightsShared() const {
-            return prepacked_weights_container_.GetNumberOfElements();
         }
 
     protected:
@@ -523,15 +442,8 @@ namespace ortki {
         int num_run_calls_ = 1;
         std::vector<std::function<void(onnxruntime::Node& node)>> add_attribute_funcs_;
 
-        IOnnxRuntimeOpSchemaRegistryList custom_schema_registries_;
-        std::vector<std::shared_ptr<CustomRegistry>> custom_session_registries_;
-
         bool verify_output_;
 
         bool use_determinism_ = false;
-
-        bool add_prepacked_shared_container_to_sessions_ = false;
-
-        onnxruntime::PrepackedWeightsContainer prepacked_weights_container_;
     };
 }

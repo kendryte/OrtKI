@@ -1,0 +1,62 @@
+name: compiler-build
+
+on: [push, pull_request]
+env:
+  NUGET_CERT_REVOCATION_MODE: offline
+  NUGET_PACKAGES: ${{ github.workspace }}/.nuget/packages
+
+jobs:
+  build-native:
+    name: build-native-${{matrix.config.name}}
+    runs-on: ${{matrix.config.os}}
+    strategy:
+      matrix:
+        config:
+          - {name: x86_64-macos, os: macos-latest, cmakeArgs: '', buildType: Release}
+          - {name: x86_64-linux, os: ubuntu-latest, cmakeArgs: '', buildType: Release}
+          - {name: x86_64-windows, os: windows-latest, arch: x64, cmakeArgs: '', buildType: Release}
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: seanmiddleditch/gha-setup-ninja@master
+
+      - name: Set up build environment (Windows, Visual Studio)
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{matrix.config.arch}}
+        if: runner.os == 'Windows'
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.7
+
+      - name: Install Conan
+        shell: bash
+        run: |
+          pip install conan==1.58
+  
+      - name: Build in docker (Linux)
+        uses: docker://sunnycase/manylinux2010_x86_64
+        with:
+            args: /bin/bash tools/build.sh
+        if: runner.os == 'Linux'
+
+      - name: Configure CMake
+        shell: bash
+        run: |
+          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=${{matrix.config.buildType}} ${{matrix.config.cmakeArgs}} -DBUILD_TEST_EXE=OFF
+        if: runner.os != 'Linux'
+
+      - name: Build & Install
+        run: |
+          cmake --build build --config ${{matrix.config.buildType}}
+          cmake --install build --prefix install
+        if: runner.os != 'Linux'
+
+      - name: Upload ortki Native Build Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ortki-native-${{matrix.config.name}}
+          path: ${{github.workspace}}/install
+          if-no-files-found: error

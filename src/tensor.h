@@ -1,5 +1,6 @@
 #pragma once
 #include "common.h"
+#include "datatype.h"
 #include "util.h"
 #include <core/framework/ort_value.h>
 #include <core/framework/tensor.h>

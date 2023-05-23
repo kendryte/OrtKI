@@ -1,8 +1,11 @@
 #include "c_api.h"
+#include "datatype.h"
 #include <core/session/onnxruntime_cxx_api.h>
 #include <core/framework/ort_value.h>
 #include "allocator_manager.h"
 #include "operators.h"
+#include "tensor.h"
+#include "op_executor.h"
 
 using namespace ortki;
 using namespace onnxruntime;
@@ -62,7 +65,7 @@ ortki::OpExecutor* make_op_executor(const char* name)
 }
 
 // onnxruntime::Tensor don't support directly type cast
-OrtKITensor* tensor_to_type(OrtKITensor* tensor, ortki::DataType dataType)
+OrtKITensor* tensor_to_type(OrtKITensor* tensor, DataType dataType)
 {
     return ortki_Cast(tensor, dataType);
 }
@@ -90,44 +93,4 @@ ortki::OrtKITensor* tensor_seq_get_value(ortki::OrtKITensorSeq* seq, size_t inde
 void tensor_seq_dispose(ortki::OrtKITensorSeq* seq)
 {
     delete seq;
-}
-
-BFloat16* make_bf16(float v)
-{
-    return new BFloat16(v);
-}
-
-float bf16_to_float(BFloat16* v)
-{
-    return v->ToFloat();
-}
-
-void bf16_dispose(BFloat16* v)
-{
-    delete v;
-}
-
-uint16_t bf16_to_uint16(BFloat16* v)
-{
-    return v->val;
-}
-
-MLFloat16* make_fp16(float v)
-{
-    return new MLFloat16(v);
-}
-
-float fp16_to_float(MLFloat16* v)
-{
-    return v->ToFloat();
-}
-
-void fp16_dispose(MLFloat16* v)
-{
-    delete v;
-}
-
-uint16_t fp16_to_uint16(MLFloat16* v)
-{
-    return v->val;
 }

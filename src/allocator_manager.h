@@ -1,9 +1,10 @@
 #pragma once
-#include "core/framework/allocator.h"
+#include <onnxruntime/core/framework/allocator.h>
 
-using namespace onnxruntime;
-namespace ortki {
-    class AllocatorManager {
+namespace ortki
+{
+    class AllocatorManager
+    {
     public:
         // the allocator manager is a just for onnx runner to allocate space for input/output tensors.
         // onnxruntime session will use the allocator owned by execution provider.
@@ -14,15 +15,15 @@ namespace ortki {
         */
         ~AllocatorManager();
 
-        AllocatorPtr GetAllocator(const std::string &name, const int id = 0, bool arena = true);
+        onnxruntime::AllocatorPtr GetAllocator(const std::string &name, const int id = 0, bool arena = true);
 
     private:
         ORT_DISALLOW_COPY_ASSIGNMENT_AND_MOVE(AllocatorManager);
 
         AllocatorManager();
 
-        Status InitializeAllocators();
+        onnxruntime::Status InitializeAllocators();
 
-        std::unordered_map<std::string, AllocatorPtr> map_;
+        std::unordered_map<std::string, onnxruntime::AllocatorPtr> map_;
     };
 }

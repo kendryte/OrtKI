@@ -1,19 +1,10 @@
 #pragma once
 #include <vector>
-#include <core/framework/tensor_shape.h>
 #include <onnx/defs/tensor_proto_util.h>
 #include <numeric>
 
 namespace ortki {
     class OrtKITensor;
-
-    inline std::vector<int64_t> GetShapeVector(const onnxruntime::TensorShape& shape) {
-        std::vector<int64_t> result;
-        const auto dims = shape.GetDims();
-        result.resize(dims.size());
-        result.assign(dims.begin(), dims.end());
-        return result;
-    }
 
     template<typename T, typename OT = T>
     inline std::vector<OT> ToVector(T* v, int size) {

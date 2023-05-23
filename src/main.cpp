@@ -1,9 +1,19 @@
-#include "op_executor.h"
-#include "util.h"
+
+#include <vector>
+#include <iostream>
 #include "c_api.h"
 #include "operators.h"
 
 using namespace ortki;
+
+template<class T>
+std::vector<T> to_vector(OrtKITensor *tensor)
+{
+    size_t bytes;
+    auto buffer = reinterpret_cast<T*>(tensor_buffer(tensor, &bytes));
+    return {buffer, buffer + bytes / sizeof(T)};
+}
+
 OrtKITensor *make_tensor()
 {
     auto input_buffer = new int[3];
@@ -11,8 +21,7 @@ OrtKITensor *make_tensor()
     input_buffer[1] = 3;
     input_buffer[2] = 4;
     std::vector<int64_t> shape = {3};
-    return new OrtKITensor(reinterpret_cast<void*>(input_buffer),
-                       DataType::TensorProto_DataType_INT32, shape);
+    return make_tensor(reinterpret_cast<void*>(input_buffer), DataType_INT32, shape.data(), shape.size());
 }
 
 
@@ -23,7 +32,7 @@ OrtKITensor *make_tensor(const std::vector<T> &value, const std::vector<int64_t>
     for (int i = 0; i < value.size(); ++i) {
         ptr[i] = value[i];
     }
-    return new OrtKITensor((void *)ptr, TypeToDataType<T>(), shape);
+    return make_tensor((void *)ptr, TypeToDataType<T>(), shape.data(), shape.size());
 }
 
 template<typename T = int>
@@ -35,9 +44,9 @@ OrtKITensor *make_tensor(const std::vector<T> &value)
 void test_cast()
 {
     auto int_tensor = make_tensor();
-    auto float_tensor = ortki_Cast(int_tensor, DataType::TensorProto_DataType_FLOAT);
-    auto fp16 = ortki_Cast(float_tensor, DataType::TensorProto_DataType_FLOAT16);
-    auto back_to_fp32 = ortki_Cast(fp16, DataType::TensorProto_DataType_FLOAT);
+    auto float_tensor = ortki_Cast(int_tensor, DataType::DataType_FLOAT);
+    auto fp16 = ortki_Cast(float_tensor, DataType::DataType_FLOAT16);
+    auto back_to_fp32 = ortki_Cast(fp16, DataType::DataType_FLOAT);
 }
 
 void test_slice()
@@ -68,8 +77,8 @@ void test_split()
     std::vector<int64_t> splits_v = {1, 3};
     auto splits = make_tensor(splits_v);
     auto output = ortki_Split(input, splits, 1);
-    auto v1 = output->get_value(0)->to_vector<int>();;
-    auto v2 = output->get_value(1)->to_vector<int>();;
+    auto v1 = to_vector<int>(tensor_seq_get_value(output, 0));
+    auto v2 = to_vector<int>(tensor_seq_get_value(output, 1));
 //    auto is_seq = output[0]->_handler.IsTensorSequence();
     std::cout << "str" << std::endl;
 }
@@ -86,8 +95,8 @@ void test_resize()
     auto roi = make_tensor(Roi, {1});
     auto scales = make_tensor(Scales);
     auto sizes = make_tensor(Sizes);
-    auto *scales_ptr = scales->buffer<float>();
-    if(scales->length() == 4 && scales_ptr[0] == 1 && scales_ptr[1] == 1)
+    auto scales_v = to_vector<float>(scales);
+    if(scales_v.size() == 4 && scales_v[0] == 1 && scales_v[1] == 1)
     {
         std::cout << "valid" << std::endl;
     }
@@ -112,14 +121,14 @@ void test_batchnorm()
 void test_argmin()
 {
     auto ret = ortki_ArgMin(make_tensor({1, 1, 3, 3}), 0, 1, 0);
-    auto v = ret->buffer<long>();
+    auto v = to_vector<long>(ret);
     std::cout << "test";
 }
 
 void test_squeeze()
 {
     auto ret = ortki_Squeeze(make_tensor({1, 1, 3, 3}), make_tensor({0L, 1L}));
-    auto v = ret->buffer<long>();
+    auto v = to_vector<long>(ret);
     std::cout << "test";
 }
 // todo:these add to test, to different type buffer
@@ -143,8 +152,8 @@ int main()
 //    std::cout << "value:" << tensorC->buffer<int>()[0] << std::endl;
 //    std::cout << "value:" << tensorC->buffer<int>()[1] << std::endl;
 //    std::cout << "value:" << tensorC->buffer<int>()[2] << std::endl;
-//    auto tensor_cast = ortki::ortki_Cast(tensorC, DataType::TensorProto_DataType_FLOAT);
-//    auto t2t = tensor_to_type(tensorC, DataType::TensorProto_DataType_FLOAT);
+//    auto tensor_cast = ortki::ortki_Cast(tensorC, DataType::DataType_FLOAT);
+//    auto t2t = tensor_to_type(tensorC, DataType::DataType_FLOAT);
 //    std::cout << t2t->buffer<float>()[0] << std::endl;
 
 }

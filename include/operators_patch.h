@@ -1,5 +1,4 @@
-#include "op_executor.h"
-#include "tensor.h"
+#include "c_api.h"
 
 // ops which be Not suitable for auto-generated
 ORTKI_API(ortki::OrtKITensorSeq) * ortki_Split(ortki::OrtKITensor * input, ortki::OrtKITensor * split, int64_t axis);

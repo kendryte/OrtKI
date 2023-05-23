@@ -13,12 +13,17 @@
 # limitations under the License.
 # pylint: disable=invalid-name, unused-argument, import-outside-toplevel
 
-from conans import ConanFile, CMake, tools
+from conan import ConanFile
+from conan.tools.build import check_min_cppstd
+from conan.tools.cmake import CMake, CMakeToolchain, cmake_layout
 
 
 class ortkiConan(ConanFile):
+    name = "ortki"
+    url = "https://github.com/kendryte/OrtKI"
     settings = "os", "compiler", "build_type", "arch"
-    generators = "cmake", "cmake_find_package", "cmake_paths"
+    generators = "CMakeToolchain", "CMakeDeps"
+    exports_sources = ["include/*", "src/*", "CMakeLists.txt"]
     options = {
         "shared": [True, False],
         "fPIC": [True, False]
@@ -29,21 +34,35 @@ class ortkiConan(ConanFile):
     }
 
     def requirements(self):
+        self.requires("onnxruntime/1.14.1")
         pass
 
     def build_requirements(self):
         pass
 
+    def layout(self):
+        cmake_layout(self, src_folder='')
+
+    def generate(self):
+        tc = CMakeToolchain(self)
+        tc.generate()
+
     def configure(self):
         min_cppstd = "17"
-        tools.check_min_cppstd(self, min_cppstd)
+        check_min_cppstd(self, min_cppstd)
 
     def cmake_configure(self):
         cmake = CMake(self)
-        cmake.definitions["CMAKE_CXX_STANDARD"] = 17
         cmake.configure()
         return cmake
 
     def build(self):
         cmake = self.cmake_configure()
         cmake.build()
+
+    def package(self):
+        cmake = CMake(self)
+        cmake.install()
+
+    def package_info(self):
+        self.cpp_info.libs = ["ortki"]

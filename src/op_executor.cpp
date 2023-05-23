@@ -1,10 +1,12 @@
+
+#include <algorithm>
+#include "allocator_manager.h"
 #include "op_executor.h"
 #include "environment.h"
 #include "default_providers.h"
 #include <core/graph/model_load_utils.h>
 #include <core/session/inference_session.h>
 #include "onnx/shape_inference/implementation.h"
-#include <algorithm>
 
 namespace ortki {
 #ifndef NDEBUG
@@ -156,7 +158,7 @@ namespace ortki {
         }
 
         auto p_model = std::make_unique<onnxruntime::Model>(
-            "test", false, ModelMetaData(), PathString(), custom_schema_registries_,
+            "test", false, ModelMetaData(), PathString(), IOnnxRuntimeOpSchemaRegistryList(),
             domain_to_version, std::vector<ONNX_NAMESPACE::FunctionProto>{},
             DefaultLoggingManager().DefaultLogger());
         onnxruntime::Graph& graph = p_model->MainGraph();
@@ -264,10 +266,6 @@ namespace ortki {
 
 
         InferenceSession session_object{ so, GetEnvironment() };
-
-        if (add_prepacked_shared_container_to_sessions_) {
-            CHECK_STATUS_OK(session_object.AddPrePackedWeightsContainer(&prepacked_weights_container_));
-        }
 
         if (execution_providers->empty()) {
             ORT_THROW("Empty execution providers vector");

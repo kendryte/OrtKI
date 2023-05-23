@@ -3,15 +3,17 @@ set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
 project(OrtKI)
 
-include(ExternalProject)
+if (NOT CONAN_CXX_FLAGS) 
+    include(cmake/configure-conan.cmake)
+    include(cmake/conan.cmake)
+    conan_cmake_run(CONANFILE conanfile.py
+                    BASIC_SETUP
+                    OPTIONS ${CONAN_OPTS}
+                    SETTINGS ${CONAN_SETTINGS}
+                    BUILD missing)
+endif()
 
-include(cmake/configure-conan.cmake)
-include(cmake/conan.cmake)
-conan_cmake_run(CONANFILE conanfile.py
-                BASIC_SETUP
-                OPTIONS ${CONAN_OPTS}
-                SETTINGS ${CONAN_SETTINGS}
-                BUILD missing)
+find_package(onnxruntime REQUIRED CONFIG)
 
 set(SRCS
         src/op_executor.cpp
@@ -38,71 +40,27 @@ set(protobuf_MSVC_STATIC_RUNTIME OFF)
 
 if(MSVC)
     add_compile_options(/wd4127)
+else()
+    target_link_options(ortki PRIVATE -Wl,--no-undefined)
 endif()
-
-add_subdirectory(onnxruntime/cmake/)
 
 set(INCLUDE_DIRS
-        include
-        onnxruntime/cmake/external/onnx
-        onnxruntime/onnxruntime/core/providers
-        onnxruntime/onnxruntime/
-        onnxruntime/include/onnxruntime
-        ${CMAKE_CURRENT_BINARY_DIR}/onnxruntime/cmake/external/onnx
-        ${CMAKE_CURRENT_BINARY_DIR}/_deps/abseil_cpp-src/
-        ${CMAKE_CURRENT_BINARY_DIR}/_deps/mp11-src/include
-        ${CMAKE_CURRENT_BINARY_DIR}/_deps/google_nsync-src/public
-        ${CMAKE_CURRENT_BINARY_DIR}/onnxruntime/cmake)
+        include)
 
 target_include_directories(ortki PUBLIC ${INCLUDE_DIRS})
+target_include_directories(ortki PRIVATE ${onnxruntime_INCLUDE_DIR}/onnxruntime)
+target_link_libraries(ortki PRIVATE onnxruntime::onnxruntime)
 
-set(ONNXRUNTIME_TARGETS onnxruntime_common onnxruntime_graph onnxruntime_framework onnxruntime_util onnxruntime_providers onnxruntime_optimizer onnxruntime_session onnxruntime_mlas onnxruntime_flatbuffers)
-
-# used for debug
-function(get_all_targets var)
-    set(targets)
-    get_all_targets_recursive(targets ${CMAKE_CURRENT_SOURCE_DIR})
-    set(${var} ${targets} PARENT_SCOPE)
-endfunction()
-
-macro(get_all_targets_recursive targets dir)
-    get_property(subdirectories DIRECTORY ${dir} PROPERTY SUBDIRECTORIES)
-    foreach(subdir ${subdirectories})
-        get_all_targets_recursive(${targets} ${subdir})
-    endforeach()
-
-    get_property(current_targets DIRECTORY ${dir} PROPERTY BUILDSYSTEM_TARGETS)
-    list(APPEND ${targets} ${current_targets})
-endmacro()
-get_all_targets(all_targets)
-message("All targets: ${all_targets}")
-
-
-if(MSVC)
-    target_link_libraries(ortki ${ONNXRUNTIME_TARGETS})
-    target_link_options(ortki PUBLIC /WHOLEARCHIVE:$<TARGET_FILE:onnxruntime_providers>)
+if (MSVC)
 elseif(APPLE)
-    target_link_libraries(ortki -Wl,-force_load ${ONNXRUNTIME_TARGETS})
 else()
-    target_link_libraries(ortki -Wl,--whole-archive ${ONNXRUNTIME_TARGETS} -Wl,--no-whole-archive -static-libstdc++ -Wl,--no-undefined)
-endif()
-
-target_link_libraries(ortki re2 onnx cpuinfo)
-
-if(MSVC)
-    if(CMAKE_BUILD_TYPE MATCHES "Debug")
-        target_link_libraries(ortki Dbghelp)
-    endif()
-else()
-    target_link_libraries(ortki
-            dl
-            nsync_cpp)
+    target_link_options(ortki PRIVATE -static-libstdc++)
 endif()
 
 
 if(BUILD_TEST_EXE)
     add_executable(run src/main.cpp)
-    target_link_libraries(run ortki)
+    target_link_libraries(run PRIVATE ortki)
 endif()
 
 install(TARGETS ortki
@@ -111,3 +69,8 @@ install(TARGETS ortki
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
+
+install(
+    DIRECTORY ${INCLUDE_DIRS}/
+    DESTINATION include/ortki
+    FILES_MATCHING PATTERN "*.h*")
