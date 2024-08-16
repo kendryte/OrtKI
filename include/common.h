@@ -6,7 +6,7 @@ namespace ortki
 {
 // https://onnxruntime.ai/docs/reference/compatibility.html
 // ortki/onnxruntime/VERSION_NUMBER
-#define DEFAULT_OPSET 16
+#define DEFAULT_OPSET 21
 
 #ifdef _WIN32
 #define ORTKI_API(ret) extern "C" __declspec(dllexport) ret

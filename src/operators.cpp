@@ -35,6 +35,15 @@ Add.AddInput("B", B);
 return new ortki::OrtKITensor(Add.Run()[0]);
 }
 
+ORTKI_API(ortki::OrtKITensor *) ortki_AffineGrid(ortki::OrtKITensor * theta, ortki::OrtKITensor * size, int64_t align_corners)
+{
+ortki::OpExecutor AffineGrid("AffineGrid");
+AffineGrid.AddInput("theta", theta);
+AffineGrid.AddInput("size", size);
+AffineGrid.AddAttribute("align_corners", align_corners);
+return new ortki::OrtKITensor(AffineGrid.Run()[0]);
+}
+
 ORTKI_API(ortki::OrtKITensor *) ortki_And(ortki::OrtKITensor * A, ortki::OrtKITensor * B)
 {
 ortki::OpExecutor And("And");
@@ -96,13 +105,14 @@ Atanh.AddInput("input", input);
 return new ortki::OrtKITensor(Atanh.Run()[0]);
 }
 
-ORTKI_API(ortki::OrtKITensor *) ortki_AveragePool(ortki::OrtKITensor * X, const char* auto_pad, int64_t ceil_mode, int64_t count_include_pad, int64_t* kernel_shape, size_t kernel_shape_size, int64_t* pads, size_t pads_size, int64_t* strides, size_t strides_size)
+ORTKI_API(ortki::OrtKITensor *) ortki_AveragePool(ortki::OrtKITensor * X, const char* auto_pad, int64_t ceil_mode, int64_t count_include_pad, int64_t* dilations, size_t dilations_size, int64_t* kernel_shape, size_t kernel_shape_size, int64_t* pads, size_t pads_size, int64_t* strides, size_t strides_size)
 {
 ortki::OpExecutor AveragePool("AveragePool");
 AveragePool.AddInput("X", X);
 AveragePool.AddAttribute("auto_pad", auto_pad);
 AveragePool.AddAttribute("ceil_mode", ceil_mode);
 AveragePool.AddAttribute("count_include_pad", count_include_pad);
+AveragePool.AddAttribute("dilations", ortki::ToVector(dilations, dilations_size));
 AveragePool.AddAttribute("kernel_shape", ortki::ToVector(kernel_shape, kernel_shape_size));
 AveragePool.AddAttribute("pads", ortki::ToVector(pads, pads_size));
 AveragePool.AddAttribute("strides", ortki::ToVector(strides, strides_size));
@@ -127,6 +137,41 @@ BitShift.AddAttribute("direction", direction);
 return new ortki::OrtKITensor(BitShift.Run()[0]);
 }
 
+ORTKI_API(ortki::OrtKITensor *) ortki_BitwiseAnd(ortki::OrtKITensor * A, ortki::OrtKITensor * B)
+{
+ortki::OpExecutor BitwiseAnd("BitwiseAnd");
+BitwiseAnd.AddInput("A", A);
+BitwiseAnd.AddInput("B", B);
+
+return new ortki::OrtKITensor(BitwiseAnd.Run()[0]);
+}
+
+ORTKI_API(ortki::OrtKITensor *) ortki_BitwiseNot(ortki::OrtKITensor * X)
+{
+ortki::OpExecutor BitwiseNot("BitwiseNot");
+BitwiseNot.AddInput("X", X);
+
+return new ortki::OrtKITensor(BitwiseNot.Run()[0]);
+}
+
+ORTKI_API(ortki::OrtKITensor *) ortki_BitwiseOr(ortki::OrtKITensor * A, ortki::OrtKITensor * B)
+{
+ortki::OpExecutor BitwiseOr("BitwiseOr");
+BitwiseOr.AddInput("A", A);
+BitwiseOr.AddInput("B", B);
+
+return new ortki::OrtKITensor(BitwiseOr.Run()[0]);
+}
+
+ORTKI_API(ortki::OrtKITensor *) ortki_BitwiseXor(ortki::OrtKITensor * A, ortki::OrtKITensor * B)
+{
+ortki::OpExecutor BitwiseXor("BitwiseXor");
+BitwiseXor.AddInput("A", A);
+BitwiseXor.AddInput("B", B);
+
+return new ortki::OrtKITensor(BitwiseXor.Run()[0]);
+}
+
 ORTKI_API(ortki::OrtKITensor *) ortki_BlackmanWindow(ortki::OrtKITensor * size, int64_t output_datatype, int64_t periodic)
 {
 ortki::OpExecutor BlackmanWindow("BlackmanWindow");
@@ -136,20 +181,21 @@ BlackmanWindow.AddAttribute("periodic", periodic);
 return new ortki::OrtKITensor(BlackmanWindow.Run()[0]);
 }
 
-ORTKI_API(ortki::OrtKITensor *) ortki_Cast(ortki::OrtKITensor * input, int64_t to)
+ORTKI_API(ortki::OrtKITensor *) ortki_Cast(ortki::OrtKITensor * input, int64_t saturate, int64_t to)
 {
 ortki::OpExecutor Cast("Cast");
 Cast.AddInput("input", input);
+Cast.AddAttribute("saturate", saturate);
 Cast.AddAttribute("to", to);
 return new ortki::OrtKITensor(Cast.Run()[0]);
 }
 
-ORTKI_API(ortki::OrtKITensor *) ortki_CastLike(ortki::OrtKITensor * input, ortki::OrtKITensor * target_type)
+ORTKI_API(ortki::OrtKITensor *) ortki_CastLike(ortki::OrtKITensor * input, ortki::OrtKITensor * target_type, int64_t saturate)
 {
 ortki::OpExecutor CastLike("CastLike");
 CastLike.AddInput("input", input);
 CastLike.AddInput("target_type", target_type);
-
+CastLike.AddAttribute("saturate", saturate);
 return new ortki::OrtKITensor(CastLike.Run()[0]);
 }
 
@@ -169,6 +215,15 @@ Celu.AddAttribute("alpha", alpha);
 return new ortki::OrtKITensor(Celu.Run()[0]);
 }
 
+ORTKI_API(ortki::OrtKITensor *) ortki_CenterCropPad(ortki::OrtKITensor * input_data, ortki::OrtKITensor * shape, int64_t* axes, size_t axes_size)
+{
+ortki::OpExecutor CenterCropPad("CenterCropPad");
+CenterCropPad.AddInput("input_data", input_data);
+CenterCropPad.AddInput("shape", shape);
+CenterCropPad.AddAttribute("axes", ortki::ToVector(axes, axes_size));
+return new ortki::OrtKITensor(CenterCropPad.Run()[0]);
+}
+
 ORTKI_API(ortki::OrtKITensor *) ortki_Clip(ortki::OrtKITensor * input, ortki::OrtKITensor * min, ortki::OrtKITensor * max)
 {
 ortki::OpExecutor Clip("Clip");
@@ -177,6 +232,18 @@ Clip.AddInput("min", min);
 Clip.AddInput("max", max);
 
 return new ortki::OrtKITensor(Clip.Run()[0]);
+}
+
+ORTKI_API(ortki::OrtKITensor *) ortki_Col2Im(ortki::OrtKITensor * input, ortki::OrtKITensor * image_shape, ortki::OrtKITensor * block_shape, int64_t* dilations, size_t dilations_size, int64_t* pads, size_t pads_size, int64_t* strides, size_t strides_size)
+{
+ortki::OpExecutor Col2Im("Col2Im");
+Col2Im.AddInput("input", input);
+Col2Im.AddInput("image_shape", image_shape);
+Col2Im.AddInput("block_shape", block_shape);
+Col2Im.AddAttribute("dilations", ortki::ToVector(dilations, dilations_size));
+Col2Im.AddAttribute("pads", ortki::ToVector(pads, pads_size));
+Col2Im.AddAttribute("strides", ortki::ToVector(strides, strides_size));
+return new ortki::OrtKITensor(Col2Im.Run()[0]);
 }
 
 ORTKI_API(ortki::OrtKITensor *) ortki_Compress(ortki::OrtKITensor * input, ortki::OrtKITensor * condition, int64_t axis)
@@ -283,15 +350,32 @@ CumSum.AddAttribute("reverse", reverse);
 return new ortki::OrtKITensor(CumSum.Run()[0]);
 }
 
-ORTKI_API(ortki::OrtKITensor *) ortki_DFT(ortki::OrtKITensor * input, ortki::OrtKITensor * dft_length, int64_t axis, int64_t inverse, int64_t onesided)
+ORTKI_API(ortki::OrtKITensor *) ortki_DFT(ortki::OrtKITensor * input, ortki::OrtKITensor * dft_length, ortki::OrtKITensor * axis, int64_t inverse, int64_t onesided)
 {
 ortki::OpExecutor DFT("DFT");
 DFT.AddInput("input", input);
 DFT.AddInput("dft_length", dft_length);
-DFT.AddAttribute("axis", axis);
+DFT.AddInput("axis", axis);
 DFT.AddAttribute("inverse", inverse);
 DFT.AddAttribute("onesided", onesided);
 return new ortki::OrtKITensor(DFT.Run()[0]);
+}
+
+ORTKI_API(ortki::OrtKITensor *) ortki_DeformConv(ortki::OrtKITensor * X, ortki::OrtKITensor * W, ortki::OrtKITensor * offset, ortki::OrtKITensor * B, ortki::OrtKITensor * mask, int64_t* dilations, size_t dilations_size, int64_t group, int64_t* kernel_shape, size_t kernel_shape_size, int64_t offset_group, int64_t* pads, size_t pads_size, int64_t* strides, size_t strides_size)
+{
+ortki::OpExecutor DeformConv("DeformConv");
+DeformConv.AddInput("X", X);
+DeformConv.AddInput("W", W);
+DeformConv.AddInput("offset", offset);
+DeformConv.AddInput("B", B);
+DeformConv.AddInput("mask", mask);
+DeformConv.AddAttribute("dilations", ortki::ToVector(dilations, dilations_size));
+DeformConv.AddAttribute("group", group);
+DeformConv.AddAttribute("kernel_shape", ortki::ToVector(kernel_shape, kernel_shape_size));
+DeformConv.AddAttribute("offset_group", offset_group);
+DeformConv.AddAttribute("pads", ortki::ToVector(pads, pads_size));
+DeformConv.AddAttribute("strides", ortki::ToVector(strides, strides_size));
+return new ortki::OrtKITensor(DeformConv.Run()[0]);
 }
 
 ORTKI_API(ortki::OrtKITensor *) ortki_DepthToSpace(ortki::OrtKITensor * input, int64_t blocksize, const char* mode)
@@ -472,6 +556,14 @@ GatherND.AddAttribute("batch_dims", batch_dims);
 return new ortki::OrtKITensor(GatherND.Run()[0]);
 }
 
+ORTKI_API(ortki::OrtKITensor *) ortki_Gelu(ortki::OrtKITensor * X, const char* approximate)
+{
+ortki::OpExecutor Gelu("Gelu");
+Gelu.AddInput("X", X);
+Gelu.AddAttribute("approximate", approximate);
+return new ortki::OrtKITensor(Gelu.Run()[0]);
+}
+
 ORTKI_API(ortki::OrtKITensor *) ortki_Gemm(ortki::OrtKITensor * A, ortki::OrtKITensor * B, ortki::OrtKITensor * C, float alpha, float beta, int64_t transA, int64_t transB)
 {
 ortki::OpExecutor Gemm("Gemm");
@@ -538,6 +630,17 @@ GridSample.AddAttribute("padding_mode", padding_mode);
 return new ortki::OrtKITensor(GridSample.Run()[0]);
 }
 
+ORTKI_API(ortki::OrtKITensor *) ortki_GroupNormalization(ortki::OrtKITensor * X, ortki::OrtKITensor * scale, ortki::OrtKITensor * bias, float epsilon, int64_t num_groups)
+{
+ortki::OpExecutor GroupNormalization("GroupNormalization");
+GroupNormalization.AddInput("X", X);
+GroupNormalization.AddInput("scale", scale);
+GroupNormalization.AddInput("bias", bias);
+GroupNormalization.AddAttribute("epsilon", epsilon);
+GroupNormalization.AddAttribute("num_groups", num_groups);
+return new ortki::OrtKITensor(GroupNormalization.Run()[0]);
+}
+
 ORTKI_API(ortki::OrtKITensor *) ortki_HammingWindow(ortki::OrtKITensor * size, int64_t output_datatype, int64_t periodic)
 {
 ortki::OpExecutor HammingWindow("HammingWindow");
@@ -587,6 +690,14 @@ ortki::OpExecutor Identity("Identity");
 Identity.AddInput("input", input);
 
 return new ortki::OrtKITensor(Identity.Run()[0]);
+}
+
+ORTKI_API(ortki::OrtKITensor *) ortki_ImageDecoder(ortki::OrtKITensor * encoded_stream, const char* pixel_format)
+{
+ortki::OpExecutor ImageDecoder("ImageDecoder");
+ImageDecoder.AddInput("encoded_stream", encoded_stream);
+ImageDecoder.AddAttribute("pixel_format", pixel_format);
+return new ortki::OrtKITensor(ImageDecoder.Run()[0]);
 }
 
 ORTKI_API(ortki::OrtKITensor *) ortki_InstanceNormalization(ortki::OrtKITensor * input, ortki::OrtKITensor * scale, ortki::OrtKITensor * B, float epsilon)
@@ -690,11 +801,13 @@ LpNormalization.AddAttribute("p", p);
 return new ortki::OrtKITensor(LpNormalization.Run()[0]);
 }
 
-ORTKI_API(ortki::OrtKITensor *) ortki_LpPool(ortki::OrtKITensor * X, const char* auto_pad, int64_t* kernel_shape, size_t kernel_shape_size, int64_t p, int64_t* pads, size_t pads_size, int64_t* strides, size_t strides_size)
+ORTKI_API(ortki::OrtKITensor *) ortki_LpPool(ortki::OrtKITensor * X, const char* auto_pad, int64_t ceil_mode, int64_t* dilations, size_t dilations_size, int64_t* kernel_shape, size_t kernel_shape_size, int64_t p, int64_t* pads, size_t pads_size, int64_t* strides, size_t strides_size)
 {
 ortki::OpExecutor LpPool("LpPool");
 LpPool.AddInput("X", X);
 LpPool.AddAttribute("auto_pad", auto_pad);
+LpPool.AddAttribute("ceil_mode", ceil_mode);
+LpPool.AddAttribute("dilations", ortki::ToVector(dilations, dilations_size));
 LpPool.AddAttribute("kernel_shape", ortki::ToVector(kernel_shape, kernel_shape_size));
 LpPool.AddAttribute("p", p);
 LpPool.AddAttribute("pads", ortki::ToVector(pads, pads_size));
@@ -806,6 +919,14 @@ for(int i = 0; i < input_size; ++i)
 
 
 return new ortki::OrtKITensor(Min.Run()[0]);
+}
+
+ORTKI_API(ortki::OrtKITensor *) ortki_Mish(ortki::OrtKITensor * X)
+{
+ortki::OpExecutor Mish("Mish");
+Mish.AddInput("X", X);
+
+return new ortki::OrtKITensor(Mish.Run()[0]);
 }
 
 ORTKI_API(ortki::OrtKITensor *) ortki_Mod(ortki::OrtKITensor * A, ortki::OrtKITensor * B, int64_t fmod)
@@ -927,12 +1048,13 @@ PRelu.AddInput("slope", slope);
 return new ortki::OrtKITensor(PRelu.Run()[0]);
 }
 
-ORTKI_API(ortki::OrtKITensor *) ortki_Pad(ortki::OrtKITensor * data, ortki::OrtKITensor * pads, ortki::OrtKITensor * constant_value, const char* mode)
+ORTKI_API(ortki::OrtKITensor *) ortki_Pad(ortki::OrtKITensor * data, ortki::OrtKITensor * pads, ortki::OrtKITensor * constant_value, ortki::OrtKITensor * axes, const char* mode)
 {
 ortki::OpExecutor Pad("Pad");
 Pad.AddInput("data", data);
 Pad.AddInput("pads", pads);
 Pad.AddInput("constant_value", constant_value);
+Pad.AddInput("axes", axes);
 Pad.AddAttribute("mode", mode);
 return new ortki::OrtKITensor(Pad.Run()[0]);
 }
@@ -982,13 +1104,14 @@ QLinearMatMul.AddInput("y_zero_point", y_zero_point);
 return new ortki::OrtKITensor(QLinearMatMul.Run()[0]);
 }
 
-ORTKI_API(ortki::OrtKITensor *) ortki_QuantizeLinear(ortki::OrtKITensor * x, ortki::OrtKITensor * y_scale, ortki::OrtKITensor * y_zero_point, int64_t axis)
+ORTKI_API(ortki::OrtKITensor *) ortki_QuantizeLinear(ortki::OrtKITensor * x, ortki::OrtKITensor * y_scale, ortki::OrtKITensor * y_zero_point, int64_t axis, int64_t saturate)
 {
 ortki::OpExecutor QuantizeLinear("QuantizeLinear");
 QuantizeLinear.AddInput("x", x);
 QuantizeLinear.AddInput("y_scale", y_scale);
 QuantizeLinear.AddInput("y_zero_point", y_zero_point);
 QuantizeLinear.AddAttribute("axis", axis);
+QuantizeLinear.AddAttribute("saturate", saturate);
 return new ortki::OrtKITensor(QuantizeLinear.Run()[0]);
 }
 
@@ -1075,75 +1198,83 @@ Reciprocal.AddInput("X", X);
 return new ortki::OrtKITensor(Reciprocal.Run()[0]);
 }
 
-ORTKI_API(ortki::OrtKITensor *) ortki_ReduceL1(ortki::OrtKITensor * data, int64_t* axes, size_t axes_size, int64_t keepdims)
+ORTKI_API(ortki::OrtKITensor *) ortki_ReduceL1(ortki::OrtKITensor * data, ortki::OrtKITensor * axes, int64_t keepdims, int64_t noop_with_empty_axes)
 {
 ortki::OpExecutor ReduceL1("ReduceL1");
 ReduceL1.AddInput("data", data);
-ReduceL1.AddAttribute("axes", ortki::ToVector(axes, axes_size));
+ReduceL1.AddInput("axes", axes);
 ReduceL1.AddAttribute("keepdims", keepdims);
+ReduceL1.AddAttribute("noop_with_empty_axes", noop_with_empty_axes);
 return new ortki::OrtKITensor(ReduceL1.Run()[0]);
 }
 
-ORTKI_API(ortki::OrtKITensor *) ortki_ReduceL2(ortki::OrtKITensor * data, int64_t* axes, size_t axes_size, int64_t keepdims)
+ORTKI_API(ortki::OrtKITensor *) ortki_ReduceL2(ortki::OrtKITensor * data, ortki::OrtKITensor * axes, int64_t keepdims, int64_t noop_with_empty_axes)
 {
 ortki::OpExecutor ReduceL2("ReduceL2");
 ReduceL2.AddInput("data", data);
-ReduceL2.AddAttribute("axes", ortki::ToVector(axes, axes_size));
+ReduceL2.AddInput("axes", axes);
 ReduceL2.AddAttribute("keepdims", keepdims);
+ReduceL2.AddAttribute("noop_with_empty_axes", noop_with_empty_axes);
 return new ortki::OrtKITensor(ReduceL2.Run()[0]);
 }
 
-ORTKI_API(ortki::OrtKITensor *) ortki_ReduceLogSum(ortki::OrtKITensor * data, int64_t* axes, size_t axes_size, int64_t keepdims)
+ORTKI_API(ortki::OrtKITensor *) ortki_ReduceLogSum(ortki::OrtKITensor * data, ortki::OrtKITensor * axes, int64_t keepdims, int64_t noop_with_empty_axes)
 {
 ortki::OpExecutor ReduceLogSum("ReduceLogSum");
 ReduceLogSum.AddInput("data", data);
-ReduceLogSum.AddAttribute("axes", ortki::ToVector(axes, axes_size));
+ReduceLogSum.AddInput("axes", axes);
 ReduceLogSum.AddAttribute("keepdims", keepdims);
+ReduceLogSum.AddAttribute("noop_with_empty_axes", noop_with_empty_axes);
 return new ortki::OrtKITensor(ReduceLogSum.Run()[0]);
 }
 
-ORTKI_API(ortki::OrtKITensor *) ortki_ReduceLogSumExp(ortki::OrtKITensor * data, int64_t* axes, size_t axes_size, int64_t keepdims)
+ORTKI_API(ortki::OrtKITensor *) ortki_ReduceLogSumExp(ortki::OrtKITensor * data, ortki::OrtKITensor * axes, int64_t keepdims, int64_t noop_with_empty_axes)
 {
 ortki::OpExecutor ReduceLogSumExp("ReduceLogSumExp");
 ReduceLogSumExp.AddInput("data", data);
-ReduceLogSumExp.AddAttribute("axes", ortki::ToVector(axes, axes_size));
+ReduceLogSumExp.AddInput("axes", axes);
 ReduceLogSumExp.AddAttribute("keepdims", keepdims);
+ReduceLogSumExp.AddAttribute("noop_with_empty_axes", noop_with_empty_axes);
 return new ortki::OrtKITensor(ReduceLogSumExp.Run()[0]);
 }
 
-ORTKI_API(ortki::OrtKITensor *) ortki_ReduceMax(ortki::OrtKITensor * data, int64_t* axes, size_t axes_size, int64_t keepdims)
+ORTKI_API(ortki::OrtKITensor *) ortki_ReduceMax(ortki::OrtKITensor * data, ortki::OrtKITensor * axes, int64_t keepdims, int64_t noop_with_empty_axes)
 {
 ortki::OpExecutor ReduceMax("ReduceMax");
 ReduceMax.AddInput("data", data);
-ReduceMax.AddAttribute("axes", ortki::ToVector(axes, axes_size));
+ReduceMax.AddInput("axes", axes);
 ReduceMax.AddAttribute("keepdims", keepdims);
+ReduceMax.AddAttribute("noop_with_empty_axes", noop_with_empty_axes);
 return new ortki::OrtKITensor(ReduceMax.Run()[0]);
 }
 
-ORTKI_API(ortki::OrtKITensor *) ortki_ReduceMean(ortki::OrtKITensor * data, int64_t* axes, size_t axes_size, int64_t keepdims)
+ORTKI_API(ortki::OrtKITensor *) ortki_ReduceMean(ortki::OrtKITensor * data, ortki::OrtKITensor * axes, int64_t keepdims, int64_t noop_with_empty_axes)
 {
 ortki::OpExecutor ReduceMean("ReduceMean");
 ReduceMean.AddInput("data", data);
-ReduceMean.AddAttribute("axes", ortki::ToVector(axes, axes_size));
+ReduceMean.AddInput("axes", axes);
 ReduceMean.AddAttribute("keepdims", keepdims);
+ReduceMean.AddAttribute("noop_with_empty_axes", noop_with_empty_axes);
 return new ortki::OrtKITensor(ReduceMean.Run()[0]);
 }
 
-ORTKI_API(ortki::OrtKITensor *) ortki_ReduceMin(ortki::OrtKITensor * data, int64_t* axes, size_t axes_size, int64_t keepdims)
+ORTKI_API(ortki::OrtKITensor *) ortki_ReduceMin(ortki::OrtKITensor * data, ortki::OrtKITensor * axes, int64_t keepdims, int64_t noop_with_empty_axes)
 {
 ortki::OpExecutor ReduceMin("ReduceMin");
 ReduceMin.AddInput("data", data);
-ReduceMin.AddAttribute("axes", ortki::ToVector(axes, axes_size));
+ReduceMin.AddInput("axes", axes);
 ReduceMin.AddAttribute("keepdims", keepdims);
+ReduceMin.AddAttribute("noop_with_empty_axes", noop_with_empty_axes);
 return new ortki::OrtKITensor(ReduceMin.Run()[0]);
 }
 
-ORTKI_API(ortki::OrtKITensor *) ortki_ReduceProd(ortki::OrtKITensor * data, int64_t* axes, size_t axes_size, int64_t keepdims)
+ORTKI_API(ortki::OrtKITensor *) ortki_ReduceProd(ortki::OrtKITensor * data, ortki::OrtKITensor * axes, int64_t keepdims, int64_t noop_with_empty_axes)
 {
 ortki::OpExecutor ReduceProd("ReduceProd");
 ReduceProd.AddInput("data", data);
-ReduceProd.AddAttribute("axes", ortki::ToVector(axes, axes_size));
+ReduceProd.AddInput("axes", axes);
 ReduceProd.AddAttribute("keepdims", keepdims);
+ReduceProd.AddAttribute("noop_with_empty_axes", noop_with_empty_axes);
 return new ortki::OrtKITensor(ReduceProd.Run()[0]);
 }
 
@@ -1157,13 +1288,22 @@ ReduceSum.AddAttribute("noop_with_empty_axes", noop_with_empty_axes);
 return new ortki::OrtKITensor(ReduceSum.Run()[0]);
 }
 
-ORTKI_API(ortki::OrtKITensor *) ortki_ReduceSumSquare(ortki::OrtKITensor * data, int64_t* axes, size_t axes_size, int64_t keepdims)
+ORTKI_API(ortki::OrtKITensor *) ortki_ReduceSumSquare(ortki::OrtKITensor * data, ortki::OrtKITensor * axes, int64_t keepdims, int64_t noop_with_empty_axes)
 {
 ortki::OpExecutor ReduceSumSquare("ReduceSumSquare");
 ReduceSumSquare.AddInput("data", data);
-ReduceSumSquare.AddAttribute("axes", ortki::ToVector(axes, axes_size));
+ReduceSumSquare.AddInput("axes", axes);
 ReduceSumSquare.AddAttribute("keepdims", keepdims);
+ReduceSumSquare.AddAttribute("noop_with_empty_axes", noop_with_empty_axes);
 return new ortki::OrtKITensor(ReduceSumSquare.Run()[0]);
+}
+
+ORTKI_API(ortki::OrtKITensor *) ortki_RegexFullMatch(ortki::OrtKITensor * X, const char* pattern)
+{
+ortki::OpExecutor RegexFullMatch("RegexFullMatch");
+RegexFullMatch.AddInput("X", X);
+RegexFullMatch.AddAttribute("pattern", pattern);
+return new ortki::OrtKITensor(RegexFullMatch.Run()[0]);
 }
 
 ORTKI_API(ortki::OrtKITensor *) ortki_Relu(ortki::OrtKITensor * X)
@@ -1469,6 +1609,15 @@ Squeeze.AddInput("axes", axes);
 return new ortki::OrtKITensor(Squeeze.Run()[0]);
 }
 
+ORTKI_API(ortki::OrtKITensor *) ortki_StringConcat(ortki::OrtKITensor * X, ortki::OrtKITensor * Y)
+{
+ortki::OpExecutor StringConcat("StringConcat");
+StringConcat.AddInput("X", X);
+StringConcat.AddInput("Y", Y);
+
+return new ortki::OrtKITensor(StringConcat.Run()[0]);
+}
+
 ORTKI_API(ortki::OrtKITensor *) ortki_StringNormalizer(ortki::OrtKITensor * X, const char* case_change_action, int64_t is_case_sensitive, const char* locale, const char** stopwords, size_t stopwords_size)
 {
 ortki::OpExecutor StringNormalizer("StringNormalizer");
@@ -1478,6 +1627,15 @@ StringNormalizer.AddAttribute("is_case_sensitive", is_case_sensitive);
 StringNormalizer.AddAttribute("locale", locale);
 StringNormalizer.AddAttribute("stopwords", ortki::ToVector<const char*, std::string>(stopwords, stopwords_size));
 return new ortki::OrtKITensor(StringNormalizer.Run()[0]);
+}
+
+ORTKI_API(ortki::OrtKITensorSeq *) ortki_StringSplit(ortki::OrtKITensor * X, const char* delimiter, int64_t maxsplit)
+{
+ortki::OpExecutor StringSplit("StringSplit");
+StringSplit.AddInput("X", X);
+StringSplit.AddAttribute("delimiter", delimiter);
+StringSplit.AddAttribute("maxsplit", maxsplit);
+return new ortki::OrtKITensorSeq(StringSplit.Run());
 }
 
 ORTKI_API(ortki::OrtKITensor *) ortki_Sub(ortki::OrtKITensor * A, ortki::OrtKITensor * B)
@@ -1681,19 +1839,22 @@ Imputer.AddAttribute("replaced_value_int64", replaced_value_int64);
 return new ortki::OrtKITensor(Imputer.Run()[0]);
 }
 
-ORTKI_API(ortki::OrtKITensor *) ortki_LabelEncoder(ortki::OrtKITensor * X, float default_float, int64_t default_int64, const char* default_string, float* keys_floats, size_t keys_floats_size, int64_t* keys_int64s, size_t keys_int64s_size, const char** keys_strings, size_t keys_strings_size, float* values_floats, size_t values_floats_size, int64_t* values_int64s, size_t values_int64s_size, const char** values_strings, size_t values_strings_size)
+ORTKI_API(ortki::OrtKITensor *) ortki_LabelEncoder(ortki::OrtKITensor * X, float default_float, int64_t default_int64, const char* default_string, ortki::OrtKITensor * default_tensor, float* keys_floats, size_t keys_floats_size, int64_t* keys_int64s, size_t keys_int64s_size, const char** keys_strings, size_t keys_strings_size, ortki::OrtKITensor * keys_tensor, float* values_floats, size_t values_floats_size, int64_t* values_int64s, size_t values_int64s_size, const char** values_strings, size_t values_strings_size, ortki::OrtKITensor * values_tensor)
 {
 ortki::OpExecutor LabelEncoder("LabelEncoder");
 LabelEncoder.AddInput("X", X);
 LabelEncoder.AddAttribute("default_float", default_float);
 LabelEncoder.AddAttribute("default_int64", default_int64);
 LabelEncoder.AddAttribute("default_string", default_string);
+LabelEncoder.AddAttribute("default_tensor", ortki::ToTensor(default_tensor));
 LabelEncoder.AddAttribute("keys_floats", ortki::ToVector(keys_floats, keys_floats_size));
 LabelEncoder.AddAttribute("keys_int64s", ortki::ToVector(keys_int64s, keys_int64s_size));
 LabelEncoder.AddAttribute("keys_strings", ortki::ToVector<const char*, std::string>(keys_strings, keys_strings_size));
+LabelEncoder.AddAttribute("keys_tensor", ortki::ToTensor(keys_tensor));
 LabelEncoder.AddAttribute("values_floats", ortki::ToVector(values_floats, values_floats_size));
 LabelEncoder.AddAttribute("values_int64s", ortki::ToVector(values_int64s, values_int64s_size));
 LabelEncoder.AddAttribute("values_strings", ortki::ToVector<const char*, std::string>(values_strings, values_strings_size));
+LabelEncoder.AddAttribute("values_tensor", ortki::ToTensor(values_tensor));
 return new ortki::OrtKITensor(LabelEncoder.Run()[0]);
 }
 

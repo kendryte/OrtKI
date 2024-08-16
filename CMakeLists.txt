@@ -32,7 +32,9 @@ if(MSVC)
     target_compile_options(ortki PRIVATE /wd4127)
     target_compile_definitions(ortki PRIVATE NOMINMAX NOGDI)
 else()
-    target_link_options(ortki PRIVATE -Wl,--no-undefined)
+    if (NOT APPLE)
+        target_link_options(ortki PRIVATE -Wl,--no-undefined)
+    endif()
 endif()
 
 set(INCLUDE_DIRS

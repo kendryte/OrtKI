@@ -67,7 +67,7 @@ ortki::OpExecutor* make_op_executor(const char* name)
 // onnxruntime::Tensor don't support directly type cast
 OrtKITensor* tensor_to_type(OrtKITensor* tensor, DataType dataType)
 {
-    return ortki_Cast(tensor, dataType);
+    return ortki_Cast(tensor, 1, dataType);
 }
 
 void tensor_reshape(ortki::OrtKITensor* tensor, int64_t* shape, size_t size)

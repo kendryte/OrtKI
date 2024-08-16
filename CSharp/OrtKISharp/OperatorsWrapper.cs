@@ -27,6 +27,12 @@ public partial class OrtKI
         return _tensor;
     }
 
+    public static Tensor AffineGrid(Tensor theta, Tensor size, long align_corners)
+    {
+        var _tensor = Native.ortki_AffineGrid(theta, size, align_corners);
+        return _tensor;
+    }
+
     public static Tensor And(Tensor A, Tensor B)
     {
         var _tensor = Native.ortki_And(A, B);
@@ -69,9 +75,9 @@ public partial class OrtKI
         return _tensor;
     }
 
-    public static Tensor AveragePool(Tensor X, string auto_pad, long ceil_mode, long count_include_pad, long[] kernel_shape, long[] pads, long[] strides)
+    public static Tensor AveragePool(Tensor X, string auto_pad, long ceil_mode, long count_include_pad, long[] dilations, long[] kernel_shape, long[] pads, long[] strides)
     {
-        var _tensor = Native.ortki_AveragePool(X, auto_pad, ceil_mode, count_include_pad, kernel_shape, (nuint)kernel_shape.Length, pads, (nuint)pads.Length, strides, (nuint)strides.Length);
+        var _tensor = Native.ortki_AveragePool(X, auto_pad, ceil_mode, count_include_pad, dilations, (nuint)dilations.Length, kernel_shape, (nuint)kernel_shape.Length, pads, (nuint)pads.Length, strides, (nuint)strides.Length);
         return _tensor;
     }
 
@@ -87,21 +93,45 @@ public partial class OrtKI
         return _tensor;
     }
 
+    public static Tensor BitwiseAnd(Tensor A, Tensor B)
+    {
+        var _tensor = Native.ortki_BitwiseAnd(A, B);
+        return _tensor;
+    }
+
+    public static Tensor BitwiseNot(Tensor X)
+    {
+        var _tensor = Native.ortki_BitwiseNot(X);
+        return _tensor;
+    }
+
+    public static Tensor BitwiseOr(Tensor A, Tensor B)
+    {
+        var _tensor = Native.ortki_BitwiseOr(A, B);
+        return _tensor;
+    }
+
+    public static Tensor BitwiseXor(Tensor A, Tensor B)
+    {
+        var _tensor = Native.ortki_BitwiseXor(A, B);
+        return _tensor;
+    }
+
     public static Tensor BlackmanWindow(Tensor size, long output_datatype, long periodic)
     {
         var _tensor = Native.ortki_BlackmanWindow(size, output_datatype, periodic);
         return _tensor;
     }
 
-    public static Tensor Cast(Tensor input, long to)
+    public static Tensor Cast(Tensor input, long saturate, long to)
     {
-        var _tensor = Native.ortki_Cast(input, to);
+        var _tensor = Native.ortki_Cast(input, saturate, to);
         return _tensor;
     }
 
-    public static Tensor CastLike(Tensor input, Tensor target_type)
+    public static Tensor CastLike(Tensor input, Tensor target_type, long saturate)
     {
-        var _tensor = Native.ortki_CastLike(input, target_type);
+        var _tensor = Native.ortki_CastLike(input, target_type, saturate);
         return _tensor;
     }
 
@@ -117,9 +147,21 @@ public partial class OrtKI
         return _tensor;
     }
 
+    public static Tensor CenterCropPad(Tensor input_data, Tensor shape, long[] axes)
+    {
+        var _tensor = Native.ortki_CenterCropPad(input_data, shape, axes, (nuint)axes.Length);
+        return _tensor;
+    }
+
     public static Tensor Clip(Tensor input, Tensor min, Tensor max)
     {
         var _tensor = Native.ortki_Clip(input, min, max);
+        return _tensor;
+    }
+
+    public static Tensor Col2Im(Tensor input, Tensor image_shape, Tensor block_shape, long[] dilations, long[] pads, long[] strides)
+    {
+        var _tensor = Native.ortki_Col2Im(input, image_shape, block_shape, dilations, (nuint)dilations.Length, pads, (nuint)pads.Length, strides, (nuint)strides.Length);
         return _tensor;
     }
 
@@ -179,9 +221,15 @@ public partial class OrtKI
         return _tensor;
     }
 
-    public static Tensor DFT(Tensor input, Tensor dft_length, long axis, long inverse, long onesided)
+    public static Tensor DFT(Tensor input, Tensor dft_length, Tensor axis, long inverse, long onesided)
     {
         var _tensor = Native.ortki_DFT(input, dft_length, axis, inverse, onesided);
+        return _tensor;
+    }
+
+    public static Tensor DeformConv(Tensor X, Tensor W, Tensor offset, Tensor B, Tensor mask, long[] dilations, long group, long[] kernel_shape, long offset_group, long[] pads, long[] strides)
+    {
+        var _tensor = Native.ortki_DeformConv(X, W, offset, B, mask, dilations, (nuint)dilations.Length, group, kernel_shape, (nuint)kernel_shape.Length, offset_group, pads, (nuint)pads.Length, strides, (nuint)strides.Length);
         return _tensor;
     }
 
@@ -300,6 +348,12 @@ public partial class OrtKI
         return _tensor;
     }
 
+    public static Tensor Gelu(Tensor X, string approximate)
+    {
+        var _tensor = Native.ortki_Gelu(X, approximate);
+        return _tensor;
+    }
+
     public static Tensor Gemm(Tensor A, Tensor B, Tensor C, float alpha, float beta, long transA, long transB)
     {
         var _tensor = Native.ortki_Gemm(A, B, C, alpha, beta, transA, transB);
@@ -342,6 +396,12 @@ public partial class OrtKI
         return _tensor;
     }
 
+    public static Tensor GroupNormalization(Tensor X, Tensor scale, Tensor bias, float epsilon, long num_groups)
+    {
+        var _tensor = Native.ortki_GroupNormalization(X, scale, bias, epsilon, num_groups);
+        return _tensor;
+    }
+
     public static Tensor HammingWindow(Tensor size, long output_datatype, long periodic)
     {
         var _tensor = Native.ortki_HammingWindow(size, output_datatype, periodic);
@@ -375,6 +435,12 @@ public partial class OrtKI
     public static Tensor Identity(Tensor input)
     {
         var _tensor = Native.ortki_Identity(input);
+        return _tensor;
+    }
+
+    public static Tensor ImageDecoder(Tensor encoded_stream, string pixel_format)
+    {
+        var _tensor = Native.ortki_ImageDecoder(encoded_stream, pixel_format);
         return _tensor;
     }
 
@@ -444,9 +510,9 @@ public partial class OrtKI
         return _tensor;
     }
 
-    public static Tensor LpPool(Tensor X, string auto_pad, long[] kernel_shape, long p, long[] pads, long[] strides)
+    public static Tensor LpPool(Tensor X, string auto_pad, long ceil_mode, long[] dilations, long[] kernel_shape, long p, long[] pads, long[] strides)
     {
-        var _tensor = Native.ortki_LpPool(X, auto_pad, kernel_shape, (nuint)kernel_shape.Length, p, pads, (nuint)pads.Length, strides, (nuint)strides.Length);
+        var _tensor = Native.ortki_LpPool(X, auto_pad, ceil_mode, dilations, (nuint)dilations.Length, kernel_shape, (nuint)kernel_shape.Length, p, pads, (nuint)pads.Length, strides, (nuint)strides.Length);
         return _tensor;
     }
 
@@ -510,6 +576,12 @@ public partial class OrtKI
     {
         var _tensor = Native.ortki_Min(data_0.Select(x => x.DangerousGetHandle()).ToArray(), (nuint)data_0.Length);
         GC.KeepAlive(data_0);
+        return _tensor;
+    }
+
+    public static Tensor Mish(Tensor X)
+    {
+        var _tensor = Native.ortki_Mish(X);
         return _tensor;
     }
 
@@ -591,9 +663,9 @@ public partial class OrtKI
         return _tensor;
     }
 
-    public static Tensor Pad(Tensor data, Tensor pads, Tensor constant_value, string mode)
+    public static Tensor Pad(Tensor data, Tensor pads, Tensor constant_value, Tensor axes, string mode)
     {
-        var _tensor = Native.ortki_Pad(data, pads, constant_value, mode);
+        var _tensor = Native.ortki_Pad(data, pads, constant_value, axes, mode);
         return _tensor;
     }
 
@@ -615,9 +687,9 @@ public partial class OrtKI
         return _tensor;
     }
 
-    public static Tensor QuantizeLinear(Tensor x, Tensor y_scale, Tensor y_zero_point, long axis)
+    public static Tensor QuantizeLinear(Tensor x, Tensor y_scale, Tensor y_zero_point, long axis, long saturate)
     {
-        var _tensor = Native.ortki_QuantizeLinear(x, y_scale, y_zero_point, axis);
+        var _tensor = Native.ortki_QuantizeLinear(x, y_scale, y_zero_point, axis, saturate);
         return _tensor;
     }
 
@@ -663,51 +735,51 @@ public partial class OrtKI
         return _tensor;
     }
 
-    public static Tensor ReduceL1(Tensor data, long[] axes, long keepdims)
+    public static Tensor ReduceL1(Tensor data, Tensor axes, long keepdims, long noop_with_empty_axes)
     {
-        var _tensor = Native.ortki_ReduceL1(data, axes, (nuint)axes.Length, keepdims);
+        var _tensor = Native.ortki_ReduceL1(data, axes, keepdims, noop_with_empty_axes);
         return _tensor;
     }
 
-    public static Tensor ReduceL2(Tensor data, long[] axes, long keepdims)
+    public static Tensor ReduceL2(Tensor data, Tensor axes, long keepdims, long noop_with_empty_axes)
     {
-        var _tensor = Native.ortki_ReduceL2(data, axes, (nuint)axes.Length, keepdims);
+        var _tensor = Native.ortki_ReduceL2(data, axes, keepdims, noop_with_empty_axes);
         return _tensor;
     }
 
-    public static Tensor ReduceLogSum(Tensor data, long[] axes, long keepdims)
+    public static Tensor ReduceLogSum(Tensor data, Tensor axes, long keepdims, long noop_with_empty_axes)
     {
-        var _tensor = Native.ortki_ReduceLogSum(data, axes, (nuint)axes.Length, keepdims);
+        var _tensor = Native.ortki_ReduceLogSum(data, axes, keepdims, noop_with_empty_axes);
         return _tensor;
     }
 
-    public static Tensor ReduceLogSumExp(Tensor data, long[] axes, long keepdims)
+    public static Tensor ReduceLogSumExp(Tensor data, Tensor axes, long keepdims, long noop_with_empty_axes)
     {
-        var _tensor = Native.ortki_ReduceLogSumExp(data, axes, (nuint)axes.Length, keepdims);
+        var _tensor = Native.ortki_ReduceLogSumExp(data, axes, keepdims, noop_with_empty_axes);
         return _tensor;
     }
 
-    public static Tensor ReduceMax(Tensor data, long[] axes, long keepdims)
+    public static Tensor ReduceMax(Tensor data, Tensor axes, long keepdims, long noop_with_empty_axes)
     {
-        var _tensor = Native.ortki_ReduceMax(data, axes, (nuint)axes.Length, keepdims);
+        var _tensor = Native.ortki_ReduceMax(data, axes, keepdims, noop_with_empty_axes);
         return _tensor;
     }
 
-    public static Tensor ReduceMean(Tensor data, long[] axes, long keepdims)
+    public static Tensor ReduceMean(Tensor data, Tensor axes, long keepdims, long noop_with_empty_axes)
     {
-        var _tensor = Native.ortki_ReduceMean(data, axes, (nuint)axes.Length, keepdims);
+        var _tensor = Native.ortki_ReduceMean(data, axes, keepdims, noop_with_empty_axes);
         return _tensor;
     }
 
-    public static Tensor ReduceMin(Tensor data, long[] axes, long keepdims)
+    public static Tensor ReduceMin(Tensor data, Tensor axes, long keepdims, long noop_with_empty_axes)
     {
-        var _tensor = Native.ortki_ReduceMin(data, axes, (nuint)axes.Length, keepdims);
+        var _tensor = Native.ortki_ReduceMin(data, axes, keepdims, noop_with_empty_axes);
         return _tensor;
     }
 
-    public static Tensor ReduceProd(Tensor data, long[] axes, long keepdims)
+    public static Tensor ReduceProd(Tensor data, Tensor axes, long keepdims, long noop_with_empty_axes)
     {
-        var _tensor = Native.ortki_ReduceProd(data, axes, (nuint)axes.Length, keepdims);
+        var _tensor = Native.ortki_ReduceProd(data, axes, keepdims, noop_with_empty_axes);
         return _tensor;
     }
 
@@ -717,9 +789,15 @@ public partial class OrtKI
         return _tensor;
     }
 
-    public static Tensor ReduceSumSquare(Tensor data, long[] axes, long keepdims)
+    public static Tensor ReduceSumSquare(Tensor data, Tensor axes, long keepdims, long noop_with_empty_axes)
     {
-        var _tensor = Native.ortki_ReduceSumSquare(data, axes, (nuint)axes.Length, keepdims);
+        var _tensor = Native.ortki_ReduceSumSquare(data, axes, keepdims, noop_with_empty_axes);
+        return _tensor;
+    }
+
+    public static Tensor RegexFullMatch(Tensor X, string pattern)
+    {
+        var _tensor = Native.ortki_RegexFullMatch(X, pattern);
         return _tensor;
     }
 
@@ -920,10 +998,22 @@ public partial class OrtKI
         return _tensor;
     }
 
+    public static Tensor StringConcat(Tensor X, Tensor Y)
+    {
+        var _tensor = Native.ortki_StringConcat(X, Y);
+        return _tensor;
+    }
+
     public static Tensor StringNormalizer(Tensor X, string case_change_action, long is_case_sensitive, string locale, string[] stopwords)
     {
         var _tensor = Native.ortki_StringNormalizer(X, case_change_action, is_case_sensitive, locale, stopwords, (nuint)stopwords.Length);
         return _tensor;
+    }
+
+    public static Tensor[] StringSplit(Tensor X, string delimiter, long maxsplit)
+    {
+        var _tensor = Native.ortki_StringSplit(X, delimiter, maxsplit);
+        return _tensor.ToTensorArray();
     }
 
     public static Tensor Sub(Tensor A, Tensor B)
@@ -1054,9 +1144,9 @@ public partial class OrtKI
         return _tensor;
     }
 
-    public static Tensor LabelEncoder(Tensor X, float default_float, long default_int64, string default_string, float[] keys_floats, long[] keys_int64s, string[] keys_strings, float[] values_floats, long[] values_int64s, string[] values_strings)
+    public static Tensor LabelEncoder(Tensor X, float default_float, long default_int64, string default_string, Tensor default_tensor, float[] keys_floats, long[] keys_int64s, string[] keys_strings, Tensor keys_tensor, float[] values_floats, long[] values_int64s, string[] values_strings, Tensor values_tensor)
     {
-        var _tensor = Native.ortki_LabelEncoder(X, default_float, default_int64, default_string, keys_floats, (nuint)keys_floats.Length, keys_int64s, (nuint)keys_int64s.Length, keys_strings, (nuint)keys_strings.Length, values_floats, (nuint)values_floats.Length, values_int64s, (nuint)values_int64s.Length, values_strings, (nuint)values_strings.Length);
+        var _tensor = Native.ortki_LabelEncoder(X, default_float, default_int64, default_string, default_tensor, keys_floats, (nuint)keys_floats.Length, keys_int64s, (nuint)keys_int64s.Length, keys_strings, (nuint)keys_strings.Length, keys_tensor, values_floats, (nuint)values_floats.Length, values_int64s, (nuint)values_int64s.Length, values_strings, (nuint)values_strings.Length, values_tensor);
         return _tensor;
     }
 

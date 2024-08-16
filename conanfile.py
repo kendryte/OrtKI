@@ -15,14 +15,14 @@
 
 from conan import ConanFile
 from conan.tools.build import check_min_cppstd
-from conan.tools.cmake import CMake, CMakeToolchain, cmake_layout
+from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
+from conan.tools.env import VirtualBuildEnv, VirtualRunEnv
 
 
 class ortkiConan(ConanFile):
     name = "ortki"
     url = "https://github.com/kendryte/OrtKI"
     settings = "os", "compiler", "build_type", "arch"
-    generators = "CMakeToolchain", "CMakeDeps"
     exports_sources = ["include/*", "src/*", "CMakeLists.txt"]
     options = {
         "shared": [True, False],
@@ -34,7 +34,7 @@ class ortkiConan(ConanFile):
     }
 
     def requirements(self):
-        self.requires("onnxruntime/1.14.1")
+        self.requires("onnxruntime/1.18.1")
         pass
 
     def build_requirements(self):
@@ -47,6 +47,10 @@ class ortkiConan(ConanFile):
         tc = CMakeToolchain(self)
         tc.variables["BUILD_SHARED_LIBS"] = self.options.shared
         tc.generate()
+        deps = CMakeDeps(self)
+        deps.generate()
+        env = VirtualBuildEnv(self)
+        env.generate()
 
     def configure(self):
         min_cppstd = "17"
